@@ -12,7 +12,7 @@
 # node.UnsetAllControlPoints() - farlig
 # TODO: Kontrollera att rätt antal frågor lästs in
 
-PROJECT_FOLDER_PATH = "/Users/christian/KI/Tutor/Projekt/"
+PROJECT_FOLDER_PATH = ""
 BIG_BRAIN_FILE_NAME = "Big_brain.nrrd"
 IN_VIVO_FILE_NAME = "In_vivo.nrrd"
 EX_VIVO_FILE_NAME = "Synthesized_FLASH25_in_MNI_v2_500um.nii"
