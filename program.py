@@ -10,7 +10,7 @@
 # VARNING: Skriv ej in exam_nr igen om slicer crashar, detta kommer radera gamla json-filen.
 # TODO: Gör metod för att ladda in backup-markups om programmet kraschar
 
-PROJECT_FOLDER_PATH = "/Users/christian/KI/Tutor/Projekt/"
+PROJECT_FOLDER_PATH = ""
 DATASETS_FILE_NAME = "open_me.mrb"
 BIG_BRAIN_FILE_NAME = "Big_brain.nrrd"
 IN_VIVO_FILE_NAME = "In_vivo.nrrd"
