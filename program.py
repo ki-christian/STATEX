@@ -8,7 +8,7 @@
 # node.UnsetAllControlPoints() - farlig
 # Kanske göra to_lower_case för att hantera olika input från csv-filen
 
-PROJECT_FOLDER_PATH = "/Users/christian/KI/Tutor/Projekt/"
+PROJECT_FOLDER_PATH = ""
 DATASETS_FILE_NAME = "open_me.mrb"
 BIG_BRAIN_FILE_NAME = "Big_brain.nrrd"
 IN_VIVO_FILE_NAME = "In_vivo.nrrd"
