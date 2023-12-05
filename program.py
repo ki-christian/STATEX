@@ -1,21 +1,19 @@
-# https://github.com/Slicer/Slicer/blob/07bc92102ca225e3d46c5545af650aac3455125d/Modules/Loadable/Markups/MRML/vtkMRMLMarkupsNode.cxx#L476
-# GetNthControlPoint
-# SetLocked
-# TODO: Visa endast strukturer i rätt dataset
-# TODO: Ändra Interaction: så kan röra punkter med musen?
-# Potentiella:
-# node.SetNthControlPointSelected(val, False)
-# node.UnsetAllControlPoints() - farlig
-# TODO: Kanske göra to_lower_case för att hantera olika input från csv-filen
-# VARNING: Skriv ej in exam_nr igen om slicer crashar, detta kommer radera gamla json-filen.
-# TODO: Gör metod för att ladda in backup-markups om programmet kraschar
+"""examination_slicer.py: Program skapat för stationsexamination i 3D Slicer
+i kursen Basvetenskap 4 på Karolinska Institutet."""
+
+__author__ = "Christian Andersson"
+#__version__ = "1.0"
+__email__ = "christian.andersson.2@stud.ki.se"
+
+import os
+import csv
 
 PROJECT_FOLDER_PATH = ""
 DATASETS_FILE_NAME = "open_me.mrb"
 BIG_BRAIN_FILE_NAME = "Big_brain.nrrd"
 IN_VIVO_FILE_NAME = "In_vivo.nrrd"
 EX_VIVO_FILE_NAME = "Synthesized_FLASH25_in_MNI_v2_500um.nii"
-STUDENT_STRUCTURES_FILE_NAME = "G_VT23_practical_dis_MRI_.csv" # PATH --> FILE_NAME
+STUDENT_STRUCTURES_FILE_NAME = "G_VT23_practical_dis_MRI_.csv"
 
 BIG_BRAIN = "Big_Brain"
 IN_VIVO = "in_vivo"
@@ -27,9 +25,6 @@ IN_VIVO_VOLUME_NAME = "vtkMRMLScalarVolumeNode1"
 EX_VIVO_VOLUME_NAME = "vtkMRMLScalarVolumeNode2"
 
 NUMBER_OF_QUESTIONS = 10
-
-import os
-import csv
 
 current_dataset = ""
 answered_questions = [False] * NUMBER_OF_QUESTIONS
@@ -53,6 +48,7 @@ def displaySelectVolume(a):
         compositeNode = sliceLogic.GetSliceCompositeNode()
         compositeNode.SetBackgroundVolumeID(str(a))
 
+# Byter dataset till big brain och fokuserar på koordinaterna [0, 0, 0]
 def resetWindow():
     changeDataset(BIG_BRAIN)
     slicer.modules.markups.logic().JumpSlicesToLocation(0, 0, 0, True)
@@ -85,24 +81,22 @@ def printStructures(structures):
 # Ändrar nuvarande dataset till specificerat dataset
 def changeDataset(dataset):
     global current_dataset
-    if dataset == current_dataset:
+    if dataset.lower() == current_dataset.lower():
         return
-    if dataset  == BIG_BRAIN:
+    if dataset.lower()  == BIG_BRAIN.lower():
         displaySelectVolume(BIG_BRAIN_VOLUME_NAME)
         current_dataset = BIG_BRAIN
-    elif dataset == IN_VIVO:
+    elif dataset.lower() == IN_VIVO.lower():
         displaySelectVolume(IN_VIVO_VOLUME_NAME)
         current_dataset = IN_VIVO
-    elif dataset == EX_VIVO:
+    elif dataset.lower() == EX_VIVO.lower():
         displaySelectVolume(EX_VIVO_VOLUME_NAME)
         current_dataset = EX_VIVO
-    elif dataset == TRACTS_3D:
+    elif dataset.lower() == TRACTS_3D.lower():
         print(f"\n{TRACTS_3D} ses i övre högra fönstret\n")
         pass
     else:
-        # Val existerar ej
-        print(f"Dataset: {dataset} existerar ej")
-        #print("Error: Dataset " + structures[val]["Dataset"] + " not found.\n")
+        print(f"\nDataset: {dataset} existerar ej\n")
 
 # Lägger till en nod med namnet exam_nr och lägger till tillhörande control points
 # för varje struktur i structures. Namnet på varje control point blir strukturens
@@ -111,8 +105,12 @@ def addNodeAndControlPoints(exam_nr, structures):
     node = slicer.mrmlScene.AddNewNodeByClass('vtkMRMLMarkupsFiducialNode', str(exam_nr))
     node.SetLocked(1)
     node.AddNControlPoints(10, "", [0, 0, 0])
-    for index, structure in enumerate(structures):
+    for _index, structure in enumerate(structures):
         # kanske byta ut index mot structure["question"]?
+        try:
+            index = int(structure["question"]) - 1
+        except:
+            index = _index
         node.SetNthControlPointLabel(index, structure["Structure"])
         node.SetNthControlPointDescription(index, f"Struktur {index + 1}")
         node.SetNthControlPointLocked(index, False)
@@ -142,15 +140,21 @@ def checkIfControlPointExists(question_number):
     return answered_questions[question_number]
 
 # Centrerar vyerna på control point
-def centreOnControlPoint(node, val):
-    # TODO: Hantera för 3D_Tracts
+# Hantera på ett bättre sätt i framtiden
+def centreOnControlPoint(node, val, dataset):
+    # Vill ej centrera på control point om är i Tracts_3D
+    if dataset == TRACTS_3D:
+        return
     controlPointCoordinates = node.GetNthControlPointPosition(val) # eller GetNthControlPointPositionWorld
     slicer.modules.markups.logic().JumpSlicesToLocation(controlPointCoordinates[0], controlPointCoordinates[1], controlPointCoordinates[2], True)
 
-# fungerar ej om klickat 1 och sen ej satt ut (ny) punkt
+def resetAnsweredQuestions():
+    global answered_questions
+    answered_questions = [False] * NUMBER_OF_QUESTIONS
+
 def updateAnsweredQuestions(node):
     global answered_questions
-    answered_questions = [False] * 10
+    resetAnsweredQuestions()
     for i in range(node.GetNumberOfControlPoints()):
         controlPointCoordinates = node.GetNthControlPointPosition(i)
         # Kan också kolla om den är set eller unset
@@ -173,112 +177,113 @@ def inputNumberInRange(prompt, low, high, exceptions=list()):
             print(f"Skriv in en siffra {low}-{high}")
             continue
 
+# Sparar en nod med control points till en fil
 def saveNodeToFile(exam_nr, node):
     slicer.util.saveNode(node, PROJECT_FOLDER_PATH + f"{exam_nr}.mrk.json") # eller mkp.json
 
+# Laddar in en fil med markups
 def loadNodeFromFile(path):
     return slicer.util.loadMarkups(path)
 
 def main():
     #loadDatasets()
 
-    # TODO: VIKTIGT: STÄLLA IN FÖNSTRET SÅ RÄTT FOKUS, EJ UTZOOMAT, EJ INZOOMAT PÅ NÅGOT KONSTIGT STÄLLE
-    # TODO: Centrera vyen när byter dataset
-    # Återställer fönstrena och byter till big brain vid ny användare
-    resetWindow()
-    print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
-
-    # readExamNr()
     while True:
-        # kanske studentLoop
-        try:
-            exam_nr = int(input("Ange exam nr: "))
-        except:
-            print("Ogiltig input. Försök igen")
-            continue
-        structures = retrieveStructures(exam_nr)
-        # Kontrollera att rätt antal strukturer har lästs in
-        if len(structures) == 0:
-            print("ERROR: Inga strukturer hittades. Testa igen")
-            continue
-        if len(structures) != NUMBER_OF_QUESTIONS:
-            print("ERROR: Antal inlästa strukturer överensstämmer ej med antalet strukturer som ska läsas in\n")
-            input("Fråga om hjälp")
-        printStructures(structures)
-        print("\nOBS: Kontrollera att de inlästa strukturerna överensstämmer med dina tilldelade strukturer\n")
-        is_correct_exam_nr = inputNumberInRange("Har du angett rätt exam nr?\n1 - Ja\n2 - Nej\n", 1, 2)
-        if is_correct_exam_nr == 1:
-            break
-        if is_correct_exam_nr == 2:
-            continue
-    if os.path.isfile(PROJECT_FOLDER_PATH + f"{exam_nr}.mrk.json"):
-        print(f"En fil med markups existerar redan för exam nr {exam_nr}")
-        read_file_option = inputNumberInRange("Vill du läsa in den?\n1 - Ja\n2 - Nej\n", 1, 2)
-        if read_file_option == 1:
-            node = loadNodeFromFile(PROJECT_FOLDER_PATH + f"{exam_nr}.mrk.json")
-        elif read_file_option == 2:
-            # om väljer denna blir node ingenting
-            pass
-    else:
-        node = addNodeAndControlPoints(exam_nr, structures)
+        # Återställer fönstrena och byter till big brain vid ny användare
+        resetWindow()
+        resetAnsweredQuestions()
+        print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
 
-    while True:
-        #slicer.app.pythonConsole().clear()
-        updateAnsweredQuestions(node)
-        # Gör en backup på node
-        saveNodeToFile(exam_nr, node)
-        printStructures(structures)
-        question_option = inputNumberInRange("\nVilken fråga vill du besvara?\n", 1, NUMBER_OF_QUESTIONS, [123456]) - 1 # anpassa för listindex
-        # ha detta i en funktion?
-        if question_option == 123456 - 1:
-            amount_answered_questions = answered_questions.count(True)
-            print(f"Du har besvarat {amount_answered_questions}/{NUMBER_OF_QUESTIONS} strukturer")
+        # readExamNr()
+        while True:
+            # kanske studentLoop
             try:
-                quit_input = input("Är du säker att du vill avsluta? Skriv in 123456 igen för att avsluta\n")
-                if quit_input == "123456":
-                    # TODO: gör något annat
-                    break
-                else:
-                    continue
+                exam_nr = int(input("Ange exam nr: "))
             except:
+                print("Ogiltig input. Försök igen")
+                continue
+            if exam_nr == 123456:
+                return
+            structures = retrieveStructures(exam_nr)
+            # Kontrollera att rätt antal strukturer har lästs in
+            if len(structures) == 0:
+                print("ERROR: Inga strukturer hittades. Testa igen")
+                continue
+            if len(structures) != NUMBER_OF_QUESTIONS:
+                print("ERROR: Antal inlästa strukturer överensstämmer ej med antalet strukturer som ska läsas in\n")
+                input("Fråga om hjälp")
+            printStructures(structures)
+            print("\nOBS: Kontrollera att de inlästa strukturerna överensstämmer med dina tilldelade strukturer\n")
+            is_correct_exam_nr = inputNumberInRange("Har du angett rätt exam nr?\n1 - Ja\n2 - Nej\n", 1, 2)
+            if is_correct_exam_nr == 1:
+                break
+            if is_correct_exam_nr == 2:
+                continue
+        if os.path.isfile(PROJECT_FOLDER_PATH + f"{exam_nr}.mrk.json"):
+            print(f"En fil med markups existerar redan för exam nr {exam_nr}")
+            read_file_option = inputNumberInRange("Vill du läsa in den?\n1 - Ja\n2 - Nej\n", 1, 2)
+            if read_file_option == 1:
+                node = loadNodeFromFile(PROJECT_FOLDER_PATH + f"{exam_nr}.mrk.json")
+            elif read_file_option == 2:
+                node = addNodeAndControlPoints(exam_nr, structures)
+                pass
+        else:
+            node = addNodeAndControlPoints(exam_nr, structures)
+
+        while True:
+            updateAnsweredQuestions(node)
+            printStructures(structures)
+            question_option = inputNumberInRange("\nVilken fråga vill du besvara?\n", 1, NUMBER_OF_QUESTIONS, [123456]) - 1 # anpassa för listindex
+            # ha detta i en funktion?
+            if question_option == 123456 - 1:
+                amount_answered_questions = answered_questions.count(True)
+                print(f"Du har besvarat {amount_answered_questions}/{NUMBER_OF_QUESTIONS} strukturer")
+                try:
+                    quit_input = input("Är du säker att du vill avsluta? Skriv in 123456 igen för att avsluta\n")
+                    if quit_input == "123456":
+                        # TODO: gör något annat
+                        # Sessionen för student ... har avslutats.
+                        break
+                    else:
+                        continue
+                except:
+                    continue
+
+            printStructure(structures[question_option])
+            changeDataset(structures[question_option]["Dataset"])
+            node.GetDisplayNode().SetActiveControlPoint(question_option)
+
+            action_option = inputNumberInRange("Vad vill du göra?\n1 - sätta ny punkt\n2 - kolla på punkten\n3 - svara på en annan struktur\n", 1, 3) # fokusera på? centrera på?
+            if action_option == 1:
+                # Ändra koordinater för control point
+                replace_option = 1 # Om det inte finns en placerad control point behöver man ej ha input
+                if checkIfControlPointExists(question_option):
+                    # Om det finns en tidigare placerad control point
+                    replace_option = inputNumberInRange("Det här kommer ta bort din gamla markering. Är du säker på att du vill fortsätta?\n1 - Ja\n2 - Nej\n", 1, 2) # fortsätt/avbryt
+                if replace_option == 1:
+                    # Placera en ny control point
+                    setNewControlPoint(node, question_option)
+                    try:
+                        input("Placera punkten. Tryck Enter för att fortsätta.")
+                        # Gör en backup på node
+                        saveNodeToFile(exam_nr, node)
+                    except:
+                        # Hamnar här ibland
+                        pass
+                elif replace_option == 2:
+                    pass
+            elif action_option == 2:
+                if checkIfControlPointExists(question_option):
+                    # Centrera på koordinaterna för control point om den existerar
+                    centreOnControlPoint(node, question_option, structures[question_option]["Dataset"])
+            elif action_option == 3:
+                # Svara på en annan fråga
                 continue
 
-        printStructure(structures[question_option])
-        changeDataset(structures[question_option]["Dataset"])
-        node.GetDisplayNode().SetActiveControlPoint(question_option)
-
-        action_option = inputNumberInRange("Vad vill du göra?\n1 - sätta ny punkt\n2 - kolla på punkten\n3 - svara på en annan struktur\n", 1, 3) # fokusera på? centrera på?
-        if action_option == 1:
-            # Ändra koordinater för control point
-            # checkIfControlPointExists/coordinates?
-            # replace --> replace_option
-            replace = 1 # Om det inte finns en placerad control point behöver man ej ha input
-            if checkIfControlPointExists(question_option):
-                # Om det finns en tidigare placerad control point
-                replace = inputNumberInRange("Det här kommer ta bort din gamla markering. Är du säker på att du vill fortsätta?\n1 - Ja\n2 - Nej\n", 1, 2) # fortsätt/avbryt
-            if replace == 1:
-                # Placera en ny control point
-                setNewControlPoint(node, question_option)
-                try:
-                    input("Placera punkten. Tryck Enter för att fortsätta.") # vill gå vidare? Även för att spara progress
-                    # TODO: Kanske bättre att flytta sparande hit?
-                except:
-                    # Hamnar här ibland
-                    pass
-            elif replace == 2:
-                pass
-        elif action_option == 2:
-            if checkIfControlPointExists(question_option):
-                # Centrera på koordinaterna för control point om den existerar
-                centreOnControlPoint(node, question_option)
-        elif action_option == 3:
-            # Svara på en annan fråga
-            continue
-    # Spara control points till en json-fil
-    saveNodeToFile(exam_nr, node)
-    print(f"Filen {exam_nr}.mrk.json med markups har sparats.")
-    print("Vänligen dubbelkolla att filen existerar.")
-    # TODO: sleep 5 sekunder?
+        # Spara control points till en json-fil
+        saveNodeToFile(exam_nr, node)
+        print(f"Filen {exam_nr}.mrk.json med markups har sparats.")
+        print("Vänligen dubbelkolla att filen existerar.")
 
 if __name__ == "__main__":
     main()
