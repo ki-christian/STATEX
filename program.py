@@ -8,7 +8,7 @@ __email__ = "christian.andersson.2@stud.ki.se"
 import os
 import csv
 
-PROJECT_FOLDER_PATH = "C:\\Users\\Christian\\Documents\\Tutor\\"
+PROJECT_FOLDER_PATH = ""
 DATASETS_FILE_NAME = "open_me.mrb"
 BIG_BRAIN_FILE_NAME = "Big_brain.nrrd"
 IN_VIVO_FILE_NAME = "In_vivo.nrrd"
