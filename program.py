@@ -14,7 +14,8 @@ BIG_BRAIN_FILE_NAME = "Big_brain.nrrd"
 IN_VIVO_FILE_NAME = "In_vivo.nrrd"
 EX_VIVO_FILE_NAME = "Synthesized_FLASH25_in_MNI_v2_500um.nii"
 STUDENT_STRUCTURES_FILE_NAME = "G_VT23_practical_dis_MRI_.csv"
-MARKUP_PATH = "G:\\Students\\"
+BACKUP_PATH = ""
+MARKUP_PATH = ""
 
 BIG_BRAIN = "Big_Brain"
 IN_VIVO = "in_vivo"
@@ -179,8 +180,8 @@ def inputNumberInRange(prompt, low, high, exceptions=list()):
             continue
 
 # Sparar en nod med control points till en fil
-def saveNodeToFile(exam_nr, node):
-    slicer.util.saveNode(node, MARKUP_PATH + f"{exam_nr}.mrk.json") # eller mkp.json
+def saveNodeToFile(node, path):
+    slicer.util.saveNode(node, path) # eller mkp.json
 
 # Laddar in en fil med markups
 def loadNodeFromFile(path):
@@ -221,7 +222,7 @@ def main():
                 break
             if is_correct_exam_nr == 2:
                 continue
-        if os.path.isfile(MARKUP_PATH + f"{exam_nr}.mrk.json"):
+        if os.path.isfile(BACKUP_PATH + f"{exam_nr}.mrk.json"):
             print(f"En fil med markups existerar redan för exam nr {exam_nr}")
             read_file_option = inputNumberInRange("Vill du läsa in den?\n1 - Ja\n2 - Nej\n", 1, 2)
             if read_file_option == 1:
@@ -268,7 +269,7 @@ def main():
                     try:
                         input("Placera punkten. Tryck Enter för att fortsätta.")
                         # Gör en backup på node
-                        saveNodeToFile(exam_nr, node)
+                        saveNodeToFile(node, BACKUP_PATH + f"{exam_nr}.mrk.json")
                     except:
                         # Hamnar här ibland
                         pass
@@ -283,7 +284,7 @@ def main():
                 continue
 
         # Spara control points till en json-fil
-        saveNodeToFile(exam_nr, node)
+        saveNodeToFile(node, MARKUP_PATH + f"{exam_nr}.mrk.json")
         print(f"Filen {exam_nr}.mrk.json med markups har sparats.")
         print("Vänligen dubbelkolla att filen existerar.")
 
