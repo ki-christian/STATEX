@@ -194,7 +194,6 @@ def main():
         # Återställer fönstrena och byter till big brain vid ny användare
         resetWindow()
         resetAnsweredQuestions()
-        # definera filename här
         print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
 
         # readExamNr()
@@ -222,11 +221,13 @@ def main():
                 break
             if is_correct_exam_nr == 2:
                 continue
-        if os.path.isfile(BACKUP_PATH + f"{exam_nr}.mrk.json"):
+        # Markups sparas till filename
+        filename = f"{exam_nr}.mrk.json"
+        if os.path.isfile(BACKUP_PATH + filename):
             print(f"En fil med markups existerar redan för exam nr {exam_nr}")
             read_file_option = inputNumberInRange("Vill du läsa in den?\n1 - Ja\n2 - Nej\n", 1, 2)
             if read_file_option == 1:
-                node = loadNodeFromFile(MARKUP_PATH + f"{exam_nr}.mrk.json")
+                node = loadNodeFromFile(BACKUP_PATH + filename)
             elif read_file_option == 2:
                 node = addNodeAndControlPoints(exam_nr, structures)
                 pass
@@ -269,7 +270,7 @@ def main():
                     try:
                         input("Placera punkten. Tryck Enter för att fortsätta.")
                         # Gör en backup på node
-                        saveNodeToFile(node, BACKUP_PATH + f"{exam_nr}.mrk.json")
+                        saveNodeToFile(node, BACKUP_PATH + filename)
                     except:
                         # Hamnar här ibland
                         pass
@@ -284,7 +285,7 @@ def main():
                 continue
 
         # Spara control points till en json-fil
-        saveNodeToFile(node, MARKUP_PATH + f"{exam_nr}.mrk.json")
+        saveNodeToFile(node, MARKUP_PATH + filename)
         print(f"Filen {exam_nr}.mrk.json med markups har sparats.")
         print("Vänligen dubbelkolla att filen existerar.")
 
