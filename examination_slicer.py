@@ -10,13 +10,12 @@ import csv
 
 SCENE_PATH = r"G:\My Drive\Course\BV4\Neuroworkshop"
 STUDENT_STRUCTURES_PATH = r"G:\My Drive\Course\BV4\Students"
-PROJECT_FOLDER_PATH = r"C:\Users\sectr\My Drive (flipslicer@gmail.com)\Course\BV4\Students"
 DATASETS_FILE_NAME = "2022-12-16-Scene.mrml" #"open_me.mrb"
 BIG_BRAIN_FILE_NAME = "Big_brain.nii"
 IN_VIVO_FILE_NAME = "In_vivo.nrrd"
 EX_VIVO_FILE_NAME = "Synthesized_FLASH25_in_MNI_v2_500um.nii"
 STUDENT_STRUCTURES_FILE_NAME = "G_VT23_practical_dis_MRI_.csv"
-BACKUP_PATH = r"C:\Users\sectr\Documents\BV4\STATEX\Backups\Ordinare_HT23"
+BACKUP_PATH = r"C:\BV4\STATEX\Backups\Ordinarie_HT23"
 MARKUP_PATH = r"G:\My Drive\Course\BV4\Students\Markups"
 
 BIG_BRAIN = "Big_Brain"
@@ -190,12 +189,10 @@ def loadNodeFromFile(path):
     return slicer.util.loadMarkups(path)
 
 def main():
-    loadDatasets()
+    #loadDatasets()
 
     if not os.path.isdir(BACKUP_PATH):
-        os.mkdir(BACKUP_PATH)
-    else:
-        print("Here")
+        os.makedirs(BACKUP_PATH)
 
     while True:
         # Återställer fönstrena och byter till big brain vid ny användare
