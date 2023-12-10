@@ -192,6 +192,11 @@ def loadNodeFromFile(path):
 def main():
     loadDatasets()
 
+    if not os.path.isdir(BACKUP_PATH):
+        os.mkdir(BACKUP_PATH)
+    else:
+        print("Here")
+
     while True:
         # Återställer fönstrena och byter till big brain vid ny användare
         resetWindow()
