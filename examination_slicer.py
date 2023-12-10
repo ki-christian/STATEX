@@ -8,7 +8,7 @@ __email__ = "christian.andersson.2@stud.ki.se"
 import os
 import csv
 
-SCENE_PATH = r"C:\Users\sectr\My Drive (flipslicer@gmail.com)\Course\BV4\Neuroworkshop"
+SCENE_PATH = r"G:\My Drive\Course\BV4\Neuroworkshop"
 STUDENT_STRUCTURES_PATH = r"G:\My Drive\Course\BV4\Students"
 PROJECT_FOLDER_PATH = r"C:\Users\sectr\My Drive (flipslicer@gmail.com)\Course\BV4\Students"
 DATASETS_FILE_NAME = "2022-12-16-Scene.mrml" #"open_me.mrb"
