@@ -8,14 +8,15 @@ __email__ = "christian.andersson.2@stud.ki.se"
 import os
 import csv
 
-PROJECT_FOLDER_PATH = ""
-DATASETS_FILE_NAME = "open_me.mrb"
-BIG_BRAIN_FILE_NAME = "Big_brain.nrrd"
+SCENE_PATH = r"C:\Users\sectr\My Drive (flipslicer@gmail.com)\Course\BV4\Neuroworkshop"
+PROJECT_FOLDER_PATH = r"C:\Users\sectr\My Drive (flipslicer@gmail.com)\Course\BV4\Students"
+DATASETS_FILE_NAME = "2022-12-16-Scene" #"open_me.mrb"
+BIG_BRAIN_FILE_NAME = "Big_brain.nii"
 IN_VIVO_FILE_NAME = "In_vivo.nrrd"
 EX_VIVO_FILE_NAME = "Synthesized_FLASH25_in_MNI_v2_500um.nii"
 STUDENT_STRUCTURES_FILE_NAME = "G_VT23_practical_dis_MRI_.csv"
-BACKUP_PATH = ""
-MARKUP_PATH = ""
+BACKUP_PATH = "C:\\Users\\sectr\\Downloads\\"
+MARKUP_PATH = r"C:\Users\sectr\My Drive (flipslicer@gmail.com)\Course\BV4\Students"'\\'
 
 BIG_BRAIN = "Big_Brain"
 IN_VIVO = "in_vivo"
@@ -33,9 +34,9 @@ answered_questions = [False] * NUMBER_OF_QUESTIONS
 
 # Läser in dataseten big_brain, in_vivo, ex_vivo och tracts_3d
 def loadDatasets(big_brain=True, in_vivo=True, ex_vivo=True, tracts_3d=True):
-    slicer.util.loadScene(PROJECT_FOLDER_PATH + DATASETS_FILE_NAME)
-    #if big_brain:
-    #    slicer.util.loadVolume(PROJECT_FOLDER_PATH + BIG_BRAIN_FILE_NAME)
+    #slicer.util.loadScene(os.path.join(PROJECT_FOLDER_PATH, DATASETS_FILE_NAME))
+    if big_brain:
+        slicer.util.loadVolume(os.path.join(SCENE_PATH, BIG_BRAIN_FILE_NAME))
     #if in_vivo:
     #    slicer.util.loadVolume(PROJECT_FOLDER_PATH + IN_VIVO_FILE_NAME)
     #if ex_vivo:
@@ -188,7 +189,7 @@ def loadNodeFromFile(path):
     return slicer.util.loadMarkups(path)
 
 def main():
-    #loadDatasets()
+    loadDatasets()
 
     while True:
         # Återställer fönstrena och byter till big brain vid ny användare
@@ -285,8 +286,8 @@ def main():
                 continue
 
         # Spara control points till en json-fil
-        saveNodeToFile(node, MARKUP_PATH + filename)
-        print(f"Filen {exam_nr}.mrk.json med markups har sparats.")
+        saveNodeToFile(node, os.path.join(MARKUP_PATH, filename))
+        print(f"Filen {os.path.join(MARKUP_PATH, str(exam_nr))}.mrk.json med markups har sparats.")
         print("Vänligen dubbelkolla att filen existerar.")
 
 if __name__ == "__main__":
