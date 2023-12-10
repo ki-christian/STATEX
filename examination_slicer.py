@@ -189,7 +189,7 @@ def loadNodeFromFile(path):
     return slicer.util.loadMarkups(path)
 
 def main():
-    #loadDatasets()
+    loadDatasets()
 
     if not os.path.isdir(BACKUP_PATH):
         os.makedirs(BACKUP_PATH)
