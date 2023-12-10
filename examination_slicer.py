@@ -9,14 +9,15 @@ import os
 import csv
 
 SCENE_PATH = r"C:\Users\sectr\My Drive (flipslicer@gmail.com)\Course\BV4\Neuroworkshop"
+STUDENT_STRUCTURES_PATH = r"G:\My Drive\Course\BV4\Students"
 PROJECT_FOLDER_PATH = r"C:\Users\sectr\My Drive (flipslicer@gmail.com)\Course\BV4\Students"
-DATASETS_FILE_NAME = "2022-12-16-Scene" #"open_me.mrb"
+DATASETS_FILE_NAME = "2022-12-16-Scene.mrml" #"open_me.mrb"
 BIG_BRAIN_FILE_NAME = "Big_brain.nii"
 IN_VIVO_FILE_NAME = "In_vivo.nrrd"
 EX_VIVO_FILE_NAME = "Synthesized_FLASH25_in_MNI_v2_500um.nii"
 STUDENT_STRUCTURES_FILE_NAME = "G_VT23_practical_dis_MRI_.csv"
-BACKUP_PATH = "C:\\Users\\sectr\\Downloads\\"
-MARKUP_PATH = r"C:\Users\sectr\My Drive (flipslicer@gmail.com)\Course\BV4\Students"'\\'
+BACKUP_PATH = r"C:\Users\sectr\Documents\BV4\STATEX\Backups\Ordinare_HT23"
+MARKUP_PATH = r"G:\My Drive\Course\BV4\Students\Markups"
 
 BIG_BRAIN = "Big_Brain"
 IN_VIVO = "in_vivo"
@@ -34,9 +35,9 @@ answered_questions = [False] * NUMBER_OF_QUESTIONS
 
 # Läser in dataseten big_brain, in_vivo, ex_vivo och tracts_3d
 def loadDatasets(big_brain=True, in_vivo=True, ex_vivo=True, tracts_3d=True):
-    #slicer.util.loadScene(os.path.join(PROJECT_FOLDER_PATH, DATASETS_FILE_NAME))
-    if big_brain:
-        slicer.util.loadVolume(os.path.join(SCENE_PATH, BIG_BRAIN_FILE_NAME))
+    slicer.util.loadScene(os.path.join(SCENE_PATH, DATASETS_FILE_NAME))
+    #if big_brain:
+    #    slicer.util.loadVolume(PROJECT_FOLDER_PATH + BIG_BRAIN_FILE_NAME)
     #if in_vivo:
     #    slicer.util.loadVolume(PROJECT_FOLDER_PATH + IN_VIVO_FILE_NAME)
     #if ex_vivo:
@@ -59,7 +60,7 @@ def resetWindow():
 # Öppnar csv-filen med strukturer och läser in alla rader tillhörande exam_nr
 def retrieveStructures(exam_nr) -> list:
     structures = []
-    with open(PROJECT_FOLDER_PATH + STUDENT_STRUCTURES_FILE_NAME, encoding="utf-8") as file:
+    with open(os.path.join(STUDENT_STRUCTURES_PATH, STUDENT_STRUCTURES_FILE_NAME), encoding="utf-8") as file:
         reader = csv.DictReader(file, delimiter=";")
         for row in reader:
             if int(row["exam_nr"]) == exam_nr:
@@ -224,11 +225,11 @@ def main():
                 continue
         # Markups sparas till filename
         filename = f"{exam_nr}.mrk.json"
-        if os.path.isfile(BACKUP_PATH + filename):
+        if os.path.isfile(os.path.join(BACKUP_PATH, filename)):
             print(f"En fil med markups existerar redan för exam nr {exam_nr}")
             read_file_option = inputNumberInRange("Vill du läsa in den?\n1 - Ja\n2 - Nej\n", 1, 2)
             if read_file_option == 1:
-                node = loadNodeFromFile(BACKUP_PATH + filename)
+                node = loadNodeFromFile(os.path.join(BACKUP_PATH, filename))
             elif read_file_option == 2:
                 node = addNodeAndControlPoints(exam_nr, structures)
                 pass
@@ -271,7 +272,7 @@ def main():
                     try:
                         input("Placera punkten. Tryck Enter för att fortsätta.")
                         # Gör en backup på node
-                        saveNodeToFile(node, BACKUP_PATH + filename)
+                        saveNodeToFile(node, os.path.join(BACKUP_PATH, filename))
                     except:
                         # Hamnar här ibland
                         pass
@@ -287,7 +288,7 @@ def main():
 
         # Spara control points till en json-fil
         saveNodeToFile(node, os.path.join(MARKUP_PATH, filename))
-        print(f"Filen {os.path.join(MARKUP_PATH, str(exam_nr))}.mrk.json med markups har sparats.")
+        print(f"Filen {os.path.join(MARKUP_PATH, filename)} med markups har sparats.")
         print("Vänligen dubbelkolla att filen existerar.")
 
 if __name__ == "__main__":
