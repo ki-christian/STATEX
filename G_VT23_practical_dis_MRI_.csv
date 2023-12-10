@@ -1,0 +1,21 @@
+﻿Xd;Nr;Structure;Dataset;result;question;exam_nr
+1;87;nucleus caudatus;Big_Brain;;1;241
+2;141;Mesencephalon;Big_Brain;;2;241
+3;45;foramen interventriculare;in_vivo;;3;241
+4;67;lobus cerebelli posterior;in_vivo;;4;241
+5;199;Sulcus marginalis;in_vivo;;5;241
+6;206;Nodulus;in_vivo;;6;241
+7;35;Cortex piriformis;ex_vivo;;7;241
+8;116;Thalamus;ex_vivo;;8;241
+9;117;Tonsilla;ex_vivo;;9;241
+10;135;Fasciculus longitidinalis inferior;Tracts_3D;;10;241
+11;159;sulcus collateralis;Big_Brain;;1;242
+12;186;Lamina terminalis;Big_Brain;;2;242
+13;8;a. cerebri posterior (P4);in_vivo;;3;242
+14;21;capsula interna;in_vivo;;4;242
+15;25;Colliculus superior;in_vivo;;5;242
+16;66;lobus cerebelli anterior;in_vivo;;6;242
+17;98;Putamen;in_vivo;;7;242
+18;107;sinus sigmoideus;in_vivo;;8;242
+19;116;Thalamus;ex_vivo;;9;242
+20;123;Ventriculus lateralis;ex_vivo;;10;242
