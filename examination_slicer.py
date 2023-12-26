@@ -31,12 +31,10 @@ EX_VIVO_VOLUME_NAME = "vtkMRMLScalarVolumeNode2"
 
 NUMBER_OF_QUESTIONS = 10
 
-#current_dataset = ""
-#answered_questions = [False] * NUMBER_OF_QUESTIONS
-
 # Classes: Examination --> Exam, Correcting
 # eller Classes: Exam, Student
-# TODO: byt till switch statement
+# TODO: byt till switch statement - finns endast efter 3.10
+# TODO: Vad gör SetLocked?
 
 class SlicerApplication:
     def __init__(self):
@@ -66,6 +64,16 @@ class SlicerApplication:
     def resetWindow(self):
         self.changeDataset(BIG_BRAIN)
         slicer.modules.markups.logic().JumpSlicesToLocation(0, 0, 0, True)
+
+    def readExamNr(self):
+        while True:
+            try:
+                exam_nr = int(input("Ange exam nr: "))
+                break
+            except:
+                print("Ogiltig input. Försök igen")
+                continue
+        return exam_nr
 
     # Öppnar csv-filen med strukturer och läser in alla rader tillhörande exam_nr
     def retrieveStructures(self, exam_nr) -> list:
@@ -186,7 +194,6 @@ class SlicerApplication:
                 return value
             else:
                 print(f"Skriv in en siffra {low}-{high}")
-                continue
 
     # Sparar en nod med control points till en fil
     def saveNodeToFile(self, node, path):
@@ -213,14 +220,9 @@ class ExamApplication(SlicerApplication):
             self.resetAnsweredQuestions()
             print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
 
-            # readExamNr()
             while True:
                 # kanske studentLoop
-                try:
-                    exam_nr = int(input("Ange exam nr: "))
-                except:
-                    print("Ogiltig input. Försök igen")
-                    continue
+                exam_nr = self.readExamNr()
                 if exam_nr == 123456:
                     return
                 structures = self.retrieveStructures(exam_nr)
@@ -322,27 +324,22 @@ class GradingApplication(SlicerApplication):
             self.resetAnsweredQuestions()
             print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
 
-            # readExamNr()
             while True:
                 # kanske studentLoop
-                try:
-                    exam_nr = int(input("Ange exam nr: "))
-                except:
-                    print("Ogiltig input. Försök igen")
-                    continue
+                exam_nr = self.readExamNr()
                 if exam_nr == 123456:
                     return
                 structures = self.retrieveStructures(exam_nr)
                 # Kontrollera att rätt antal strukturer har lästs in
                 if len(structures) == 0:
-                    print("ERROR: Inga strukturer hittades. Testa igen")
+                    print(f"ERROR: Inga strukturer hittades för exam nr: {exam_nr}. Testa igen")
                     continue
                 if len(structures) == NUMBER_OF_QUESTIONS:
                     print("\nOBS: Kontrollera att de inlästa strukturerna överensstämmer med studentens strukturer\n")
                     break
                 else:
-                    print("ERROR: Antal inlästa strukturer överensstämmer ej med antalet strukturer som ska läsas in\n")
-                    input("Fråga om hjälp")
+                    print(f"ERROR: Antal inlästa strukturer för exam nr: {exam_nr} överensstämmer ej med antalet strukturer som ska läsas in\n")
+                    input()
 
             # Markups finns sparade på filename
             filename = f"{exam_nr}.mrk.json"
@@ -376,9 +373,9 @@ class GradingApplication(SlicerApplication):
 
 if __name__ == "__main__":
     while True:
-        print("Är du student eller rättare?")
+        print("Vill du starta programmet för studenter eller för rättare?")
         try:
-            application_option = int(input("1 - student\n2 - rättare\n"))
+            application_option = int(input("1 - studenter\n2 - rättare\n"))
         except:
             print("Skriv in ett nummer 1-2")
             continue
@@ -389,6 +386,9 @@ if __name__ == "__main__":
 
     if application_option == 1:
         application = ExamApplication()
-    else:
+    elif application_option == 2:
         application = GradingApplication()
+    else:
+        # Ska inte komma hit
+        raise Exception("Kunde ej starta programmet på grund av felaktig input")
     application.run()
