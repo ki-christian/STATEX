@@ -23,7 +23,7 @@ IN_VIVO = "in_vivo"
 EX_VIVO = "ex_vivo"
 TRACTS_3D = "Tracts_3D"
 
-LOAD_DATASETS = False
+LOAD_DATASETS = True
 
 BIG_BRAIN_VOLUME_NAME = "vtkMRMLScalarVolumeNode3"
 IN_VIVO_VOLUME_NAME = "vtkMRMLScalarVolumeNode1"
