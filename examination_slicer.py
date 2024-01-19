@@ -16,25 +16,25 @@ IN_VIVO_FILE_NAME = "In_vivo.nrrd"
 EX_VIVO_FILE_NAME = "Synthesized_FLASH25_in_MNI_v2_500um.nii"
 STUDENT_STRUCTURES_FILE_NAME = "G_VT23_practical_dis_MRI_.csv"
 BACKUP_PATH = r"C:\BV4\STATEX\Backups\Ordinarie_HT23"
-MARKUP_PATH = r"G:\My Drive\Course\BV4\Students\Markups"
+MARKUP_PATH = r"G:\My Drive\Course\BV4\Students\Markups")
+
+LOAD_DATASETS = True
 
 BIG_BRAIN = "Big_Brain"
 IN_VIVO = "in_vivo"
 EX_VIVO = "ex_vivo"
 TRACTS_3D = "Tracts_3D"
 
-LOAD_DATASETS = True
-
 BIG_BRAIN_VOLUME_NAME = "vtkMRMLScalarVolumeNode3"
 IN_VIVO_VOLUME_NAME = "vtkMRMLScalarVolumeNode1"
 EX_VIVO_VOLUME_NAME = "vtkMRMLScalarVolumeNode2"
 
 NUMBER_OF_QUESTIONS = 10
+QUIT_CODE = 123456
 
-# Classes: Examination --> Exam, Correcting
 # eller Classes: Exam, Student
-# TODO: byt till switch statement - finns endast efter 3.10
 # TODO: Vad gör SetLocked?
+# TODO: Strukturer för {exam_nr} inläst
 
 class SlicerApplication:
     def __init__(self):
@@ -127,7 +127,6 @@ class SlicerApplication:
         node.SetLocked(1)
         node.AddNControlPoints(10, "", [0, 0, 0])
         for _index, structure in enumerate(structures):
-            # kanske byta ut index mot structure["question"]?
             try:
                 index = int(structure["question"]) - 1
             except:
@@ -141,12 +140,12 @@ class SlicerApplication:
         return node
 
     # Ändrar till place mode så att en ny control point kan placeras ut
-    def setNewControlPoint(self, node, val):
+    def setNewControlPoint(self, node, index):
         # Återställ control point
-        node.SetNthControlPointPosition(val, 0.0, 0.0, 0.0)
-        node.UnsetNthControlPointPosition(val)
+        node.SetNthControlPointPosition(index, 0.0, 0.0, 0.0)
+        node.UnsetNthControlPointPosition(index)
         # Placera ut ny control point
-        node.SetControlPointPlacementStartIndex(val)
+        node.SetControlPointPlacementStartIndex(index)
         slicer.modules.markups.logic().StartPlaceMode(1)
         interactionNode = slicer.mrmlScene.GetNodeByID("vtkMRMLInteractionNodeSingleton")
         # Återgå sedan till normalt läge när klar
@@ -162,11 +161,11 @@ class SlicerApplication:
 
     # Centrerar vyerna på control point
     # Hantera på ett bättre sätt i framtiden
-    def centreOnControlPoint(self, node, val, dataset):
+    def centreOnControlPoint(self, node, index, dataset):
         # Vill ej centrera på control point om är i Tracts_3D
         if dataset == TRACTS_3D:
             return
-        controlPointCoordinates = node.GetNthControlPointPosition(val) # eller GetNthControlPointPositionWorld
+        controlPointCoordinates = node.GetNthControlPointPosition(index) # eller GetNthControlPointPositionWorld
         slicer.modules.markups.logic().JumpSlicesToLocation(controlPointCoordinates[0], controlPointCoordinates[1], controlPointCoordinates[2], True)
 
     def resetAnsweredQuestions(self):
@@ -203,6 +202,7 @@ class SlicerApplication:
     def loadNodeFromFile(self, path):
         return slicer.util.loadMarkups(path)
 
+    # Huvudsakliga logiken för användning av programmet. Bör implementeras av alla klasser som ärver av denna klass
     def run(self):
         if LOAD_DATASETS:
             self.loadDatasets()
@@ -223,7 +223,7 @@ class ExamApplication(SlicerApplication):
             while True:
                 # kanske studentLoop
                 exam_nr = self.readExamNr()
-                if exam_nr == 123456:
+                if exam_nr == QUIT_CODE:
                     return
                 structures = self.retrieveStructures(exam_nr)
                 # Kontrollera att rätt antal strukturer har lästs in
@@ -256,21 +256,22 @@ class ExamApplication(SlicerApplication):
             while True:
                 self.updateAnsweredQuestions(node)
                 self.printStructures(structures)
-                question_option = self.inputNumberInRange("\nVilken fråga vill du besvara?\n", 1, NUMBER_OF_QUESTIONS, [123456]) - 1 # anpassa för listindex
+                question_option = self.inputNumberInRange("\nVilken fråga vill du besvara?\n", 1, NUMBER_OF_QUESTIONS, [QUIT_CODE]) - 1 # anpassa för listindex
                 # ha detta i en funktion?
-                if question_option == 123456 - 1:
+                if question_option == QUIT_CODE - 1:
                     amount_answered_questions = self.answered_questions.count(True)
                     print(f"Du har besvarat {amount_answered_questions}/{NUMBER_OF_QUESTIONS} strukturer")
                     try:
-                        quit_input = input("Är du säker att du vill avsluta? Skriv in 123456 igen för att avsluta\n")
-                        if quit_input == "123456":
+                        quit_input = input(f"Är du säker att du vill avsluta? Skriv in {QUIT_CODE} igen för att avsluta\n")
+                        if quit_input == str(QUIT_CODE):
                             # TODO: gör något annat
-                            # Sessionen för student ... har avslutats.
+                            print(f"Sessionen för student med exam nr: {exam_nr} har avslutats")
                             break
                         else:
                             continue
                     except:
                         continue
+                result = qt.QInputDialog().getText(None, "Some Title","Some description")
 
                 self.printStructure(structures[question_option])
                 self.changeDataset(structures[question_option]["Dataset"])
@@ -325,9 +326,8 @@ class GradingApplication(SlicerApplication):
             print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
 
             while True:
-                # kanske studentLoop
                 exam_nr = self.readExamNr()
-                if exam_nr == 123456:
+                if exam_nr == QUIT_CODE:
                     return
                 structures = self.retrieveStructures(exam_nr)
                 # Kontrollera att rätt antal strukturer har lästs in
@@ -355,9 +355,9 @@ class GradingApplication(SlicerApplication):
 
             while True:
                 self.printStructures(structures)
-                question_option = self.inputNumberInRange("\nVilken fråga vill du rätta?\n", 1, NUMBER_OF_QUESTIONS, [123456]) - 1 # anpassa för listindex
+                question_option = self.inputNumberInRange("\nVilken fråga vill du rätta?\n", 1, NUMBER_OF_QUESTIONS, [QUIT_CODE]) - 1 # anpassa för listindex
                 # ha detta i en funktion?
-                if question_option == 123456 - 1:
+                if question_option == QUIT_CODE - 1:
                     slicer.mrmlScene.RemoveNode(node)
                     break
 
