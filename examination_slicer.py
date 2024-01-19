@@ -271,7 +271,6 @@ class ExamApplication(SlicerApplication):
                             continue
                     except:
                         continue
-                result = qt.QInputDialog().getText(None, "Some Title","Some description")
 
                 self.printStructure(structures[question_option])
                 self.changeDataset(structures[question_option]["Dataset"])
