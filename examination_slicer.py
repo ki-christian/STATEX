@@ -35,6 +35,7 @@ QUIT_CODE = 123456
 # eller Classes: Exam, Student
 # TODO: Vad gör SetLocked?
 # TODO: Strukturer för {exam_nr} inläst
+# TODO: Besvarade fråga: x/10 för rättare
 
 class SlicerApplication:
     def __init__(self):
@@ -253,9 +254,53 @@ class ExamApplication(SlicerApplication):
             else:
                 node = self.addNodeAndControlPoints(exam_nr, structures)
 
+            mode_option = self.inputNumberInRange("\nVill du svara på alla frågor i rad eller en fråga i taget?\n1 - i rad\n2 - en i taget\n", 1, 2)
+            if mode_option == 1:
+                self.updateAnsweredQuestions(node)
+                self.printStructures(structures)
+                for question_number in range(0, 10):
+                    try:
+                        while True:
+                            place_option = input("\nTryck Enter för att placera nästa punkt eller skriv in 11 för att placera punkter enskilt.\n")
+                            self.updateAnsweredQuestions(node)
+                            #for _question_num, is_answered in enumerate(self.answered_questions):
+                            #    print(f"{_question_num}: {is_answered}")
+                            #print(question_number)
+                            #if question_number > 0:
+                            #    print(self.checkIfControlPointExists(question_number - 1))
+                            if question_number == 0 or self.checkIfControlPointExists(question_number - 1):
+                                break
+                            else:
+                                print("Placera ut förra punkten innan du fortsätter.")
+                                continue
+                        # Gör en backup på node
+                        self.saveNodeToFile(node, os.path.join(BACKUP_PATH, filename))
+                        if place_option == "11":
+                            break
+                    except:
+                        # Hamnar här ibland
+                        pass
+
+                    print(f"Besvarar fråga {question_number + 1}")
+                    self.printStructure(structures[question_number])
+                    # REPLIKERAD KOD - ÅTGÄRDA
+                    # Fånga när ej svarat på en fråga
+                    # Placera en ny control point
+                    self.changeDataset(structures[question_number]["Dataset"])
+                    node.GetDisplayNode().SetActiveControlPoint(question_number)
+                    self.setNewControlPoint(node, question_number)
+                if question_number == 9:
+                    print("Placera ut sista punkten. Tryck sedan Enter för att fortsätta.")
+                self.saveNodeToFile(node, os.path.join(BACKUP_PATH, filename))
+
+            elif mode_option == 2:
+                pass
+
             while True:
                 self.updateAnsweredQuestions(node)
                 self.printStructures(structures)
+
+                # eller bara välj en fråga?
                 question_option = self.inputNumberInRange("\nVilken fråga vill du besvara?\n", 1, NUMBER_OF_QUESTIONS, [QUIT_CODE]) - 1 # anpassa för listindex
                 # ha detta i en funktion?
                 if question_option == QUIT_CODE - 1:
