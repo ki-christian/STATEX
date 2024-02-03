@@ -18,7 +18,7 @@ STUDENT_STRUCTURES_FILE_NAME = "G_VT23_practical_dis_MRI_.csv"
 BACKUP_PATH = r"C:\BV4\STATEX\Backups\Ordinarie_HT23"
 MARKUP_PATH = r"G:\My Drive\Course\BV4\Students\Markups")
 
-LOAD_DATASETS = True
+LOAD_DATASETS = False
 
 BIG_BRAIN = "Big_Brain"
 IN_VIVO = "in_vivo"
@@ -254,11 +254,9 @@ class ExamApplication(SlicerApplication):
                 node = self.addNodeAndControlPoints(exam_nr, structures)
 
             while True:
-                self.updateAnsweredQuestions(node)
-                self.printStructures(structures)
-                question_option = self.inputNumberInRange("\nVilken fråga vill du besvara?\n", 1, NUMBER_OF_QUESTIONS, [QUIT_CODE]) - 1 # anpassa för listindex
+                mode_option = self.inputNumberInRange("\nVad vill du göra?\n1 - placera ut strukturer\n2 - kolla på strukturer\n", 1, 2, [QUIT_CODE])
                 # ha detta i en funktion?
-                if question_option == QUIT_CODE - 1:
+                if mode_option == QUIT_CODE:
                     amount_answered_questions = self.answered_questions.count(True)
                     print(f"Du har besvarat {amount_answered_questions}/{NUMBER_OF_QUESTIONS} strukturer")
                     try:
@@ -271,37 +269,49 @@ class ExamApplication(SlicerApplication):
                             continue
                     except:
                         continue
-
-                self.printStructure(structures[question_option])
-                self.changeDataset(structures[question_option]["Dataset"])
-                node.GetDisplayNode().SetActiveControlPoint(question_option)
-
-                action_option = self.inputNumberInRange("Vad vill du göra?\n1 - sätta ny punkt\n2 - kolla på punkten\n3 - svara på en annan struktur\n", 1, 3) # fokusera på? centrera på?
-                if action_option == 1:
-                    # Ändra koordinater för control point
-                    replace_option = 1 # Om det inte finns en placerad control point behöver man ej ha input
-                    if self.checkIfControlPointExists(question_option):
-                        # Om det finns en tidigare placerad control point
-                        replace_option = self.inputNumberInRange("Det här kommer ta bort din gamla markering. Är du säker på att du vill fortsätta?\n1 - Ja\n2 - Nej\n", 1, 2) # fortsätt/avbryt
-                    if replace_option == 1:
-                        # Placera en ny control point
-                        self.setNewControlPoint(node, question_option)
-                        try:
-                            input("Placera punkten. Tryck Enter för att fortsätta.")
-                            # Gör en backup på node
-                            self.saveNodeToFile(node, os.path.join(BACKUP_PATH, filename))
-                        except:
-                            # Hamnar här ibland
+                if mode_option == 1:
+                    while True:
+                        self.updateAnsweredQuestions(node)
+                        self.printStructures(structures)
+                        question_option = self.inputNumberInRange(f"\nVilken fråga vill du besvara? (Skriv in {NUMBER_OF_QUESTIONS + 1} för att gå tillbaka till förra menyn).\n", 1, NUMBER_OF_QUESTIONS, [NUMBER_OF_QUESTIONS + 1]) - 1 # anpassa för listindex
+                        # ha detta i en funktion?
+                        if question_option == NUMBER_OF_QUESTIONS:
+                            break
+                        self.printStructure(structures[question_option])
+                        self.changeDataset(structures[question_option]["Dataset"])
+                        node.GetDisplayNode().SetActiveControlPoint(question_option)
+                        # Ändra koordinater för control point
+                        replace_option = 1 # Om det inte finns en placerad control point behöver man ej ha input
+                        if self.checkIfControlPointExists(question_option):
+                            # Om det finns en tidigare placerad control point
+                            replace_option = self.inputNumberInRange("Det här kommer ta bort din gamla markering. Är du säker på att du vill fortsätta?\n1 - Ja\n2 - Nej\n", 1, 2) # fortsätt/avbryt
+                        if replace_option == 1:
+                            # Placera en ny control point
+                            self.setNewControlPoint(node, question_option)
+                            try:
+                                input("Placera punkten. Tryck Enter för att fortsätta.")
+                                # Gör en backup på node
+                                self.saveNodeToFile(node, os.path.join(BACKUP_PATH, filename))
+                            except:
+                                # Hamnar här ibland
+                                pass
+                        elif replace_option == 2:
                             pass
-                    elif replace_option == 2:
-                        pass
-                elif action_option == 2:
-                    if self.checkIfControlPointExists(question_option):
-                        # Centrera på koordinaterna för control point om den existerar
-                        self.centreOnControlPoint(node, question_option, structures[question_option]["Dataset"])
-                elif action_option == 3:
-                    # Svara på en annan fråga
-                    continue
+                elif mode_option == 2:
+                    while True:
+                        self.updateAnsweredQuestions(node)
+                        self.printStructures(structures)
+                        question_option = self.inputNumberInRange(f"\nVilken fråga vill du kolla på? (Skriv in {NUMBER_OF_QUESTIONS + 1} för att gå tillbaka till förra menyn).\n", 1, NUMBER_OF_QUESTIONS, [NUMBER_OF_QUESTIONS + 1]) - 1 # anpassa för listindex
+                        # ha detta i en funktion?
+                        if question_option == NUMBER_OF_QUESTIONS:
+                            break
+                        if self.checkIfControlPointExists(question_option):
+                            self.changeDataset(structures[question_option]["Dataset"])
+                            node.GetDisplayNode().SetActiveControlPoint(question_option)
+                            # Centrera på koordinaterna för control point om den existerar
+                            self.centreOnControlPoint(node, question_option, structures[question_option]["Dataset"])
+                        else:
+                            print("Frågan är ej besvarad.\n")
 
             # Spara control points till en json-fil
             if os.path.isfile(os.path.join(MARKUP_PATH, filename)):
