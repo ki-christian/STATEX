@@ -274,7 +274,6 @@ class ExamApplication(SlicerApplication):
                         self.updateAnsweredQuestions(node)
                         self.printStructures(structures)
                         question_option = self.inputNumberInRange(f"\nVilken fråga vill du besvara? (Skriv in {NUMBER_OF_QUESTIONS + 1} för att gå tillbaka till förra menyn).\n", 1, NUMBER_OF_QUESTIONS, [NUMBER_OF_QUESTIONS + 1]) - 1 # anpassa för listindex
-                        # ha detta i en funktion?
                         if question_option == NUMBER_OF_QUESTIONS:
                             break
                         self.printStructure(structures[question_option])
@@ -302,7 +301,6 @@ class ExamApplication(SlicerApplication):
                         self.updateAnsweredQuestions(node)
                         self.printStructures(structures)
                         question_option = self.inputNumberInRange(f"\nVilken fråga vill du kolla på? (Skriv in {NUMBER_OF_QUESTIONS + 1} för att gå tillbaka till förra menyn).\n", 1, NUMBER_OF_QUESTIONS, [NUMBER_OF_QUESTIONS + 1]) - 1 # anpassa för listindex
-                        # ha detta i en funktion?
                         if question_option == NUMBER_OF_QUESTIONS:
                             break
                         if self.checkIfControlPointExists(question_option):
