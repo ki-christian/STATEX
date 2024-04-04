@@ -46,12 +46,12 @@ class SlicerApplication:
     def loadDatasets(big_brain=True, in_vivo=True, ex_vivo=True, tracts_3d=True):
         #slicer.util.loadScene(os.path.join(SCENE_PATH, DATASETS_FILE_NAME))
         if big_brain:
-            slicer.util.loadVolume(PROJECT_FOLDER_PATH + BIG_BRAIN_FILE_NAME)
+            slicer.util.loadVolume(os.path.join(SCENE_PATH, BIG_BRAIN_FILE_NAME))
         if in_vivo:
-            slicer.util.loadVolume(PROJECT_FOLDER_PATH + IN_VIVO_FILE_NAME)
+            slicer.util.loadVolume(os.path.join(SCENE_PATH, IN_VIVO_FILE_NAME))
         if ex_vivo:
-            slicer.util.loadVolume(PROJECT_FOLDER_PATH + EX_VIVO_FILE_NAME)
-        slicer.util.loadVolume(PROJECT_FOLDER_PATH + WHITE_TRACTS_FILE_NAME)
+            slicer.util.loadVolume(os.path.join(SCENE_PATH, EX_VIVO_FILE_NAME))
+        slicer.util.loadVolume(os.path.join(SCENE_PATH, WHITE_TRACTS_FILE_NAME))
 
 
     def displaySelectVolume(self, a):
