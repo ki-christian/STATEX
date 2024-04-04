@@ -8,17 +8,18 @@ __email__ = "christian.andersson.2@stud.ki.se"
 import os
 import csv
 
-SCENE_PATH = r"G:\My Drive\Course\BV4\Neuroworkshop"
+SCENE_PATH = r"G:\My Drive\Neuro\Dataset"
 STUDENT_STRUCTURES_PATH = r"G:\My Drive\Course\BV4\Students"
 DATASETS_FILE_NAME = "2022-12-16-Scene.mrml" #"open_me.mrb"
 BIG_BRAIN_FILE_NAME = "Big_brain.nii"
-IN_VIVO_FILE_NAME = "In_vivo.nrrd"
-EX_VIVO_FILE_NAME = "Synthesized_FLASH25_in_MNI_v2_500um.nii"
+IN_VIVO_FILE_NAME = "In_vivo.nii"
+EX_VIVO_FILE_NAME = "Ex_vivo.nii"
+WHITE_TRACTS_FILE_NAME = "3Dvolume"
 STUDENT_STRUCTURES_FILE_NAME = "G_VT23_practical_dis_MRI_.csv"
 BACKUP_PATH = r"C:\BV4\STATEX\Backups\Ordinarie_HT23"
-MARKUP_PATH = r"G:\My Drive\Course\BV4\Students\Markups")
+MARKUP_PATH = r"G:\My Drive\Course\BV4\Students\Markups"
 
-LOAD_DATASETS = False
+LOAD_DATASETS = True
 
 BIG_BRAIN = "Big_Brain"
 IN_VIVO = "in_vivo"
@@ -30,7 +31,7 @@ IN_VIVO_VOLUME_NAME = "vtkMRMLScalarVolumeNode1"
 EX_VIVO_VOLUME_NAME = "vtkMRMLScalarVolumeNode2"
 
 NUMBER_OF_QUESTIONS = 10
-QUIT_CODE = 123456
+QUIT_CODE = 1234
 
 # eller Classes: Exam, Student
 # TODO: Vad gör SetLocked?
@@ -43,13 +44,15 @@ class SlicerApplication:
 
     # Läser in dataseten big_brain, in_vivo, ex_vivo och tracts_3d
     def loadDatasets(big_brain=True, in_vivo=True, ex_vivo=True, tracts_3d=True):
-        slicer.util.loadScene(os.path.join(SCENE_PATH, DATASETS_FILE_NAME))
-        #if big_brain:
-        #    slicer.util.loadVolume(PROJECT_FOLDER_PATH + BIG_BRAIN_FILE_NAME)
-        #if in_vivo:
-        #    slicer.util.loadVolume(PROJECT_FOLDER_PATH + IN_VIVO_FILE_NAME)
-        #if ex_vivo:
-        #    slicer.util.loadVolume(PROJECT_FOLDER_PATH + EX_VIVO_FILE_NAME)
+        #slicer.util.loadScene(os.path.join(SCENE_PATH, DATASETS_FILE_NAME))
+        if big_brain:
+            slicer.util.loadVolume(PROJECT_FOLDER_PATH + BIG_BRAIN_FILE_NAME)
+        if in_vivo:
+            slicer.util.loadVolume(PROJECT_FOLDER_PATH + IN_VIVO_FILE_NAME)
+        if ex_vivo:
+            slicer.util.loadVolume(PROJECT_FOLDER_PATH + EX_VIVO_FILE_NAME)
+        slicer.util.loadVolume(PROJECT_FOLDER_PATH + WHITE_TRACTS_FILE_NAME)
+
 
     def displaySelectVolume(self, a):
         layoutManager = slicer.app.layoutManager()
@@ -286,14 +289,20 @@ class ExamApplication(SlicerApplication):
                             replace_option = self.inputNumberInRange("Det här kommer ta bort din gamla markering. Är du säker på att du vill fortsätta?\n1 - Ja\n2 - Nej\n", 1, 2) # fortsätt/avbryt
                         if replace_option == 1:
                             # Placera en ny control point
-                            self.setNewControlPoint(node, question_option)
                             try:
-                                input("Placera punkten. Tryck Enter för att fortsätta.")
-                                # Gör en backup på node
-                                self.saveNodeToFile(node, os.path.join(BACKUP_PATH, filename))
+                                input("\nLeta upp strukturen. Tryck sedan Enter för att placera punkten.")
                             except:
                                 # Hamnar här ibland
                                 pass
+                            self.setNewControlPoint(node, question_option)
+                            # Gör en backup på node
+                            try:
+                                input("\nTryck Enter när du placerat ut punkten.")
+                            except:
+                                # Hamnar här ibland
+                                pass
+                            self.saveNodeToFile(node, os.path.join(BACKUP_PATH, filename))
+
                         elif replace_option == 2:
                             pass
                 elif mode_option == 2:
