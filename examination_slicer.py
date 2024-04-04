@@ -8,8 +8,8 @@ __email__ = "christian.andersson.2@stud.ki.se"
 import os
 import csv
 
-SCENE_PATH = r"G:\My Drive\Neuro\Dataset"
-STUDENT_STRUCTURES_PATH = r"G:\My Drive\Course\BV4\Students"
+SCENE_PATH = r"G:\Min enhet\Neuro\Dataset"
+STUDENT_STRUCTURES_PATH = r"G:\Min enhet\Neuro\BV4\Students"
 DATASETS_FILE_NAME = "2022-12-16-Scene.mrml" #"open_me.mrb"
 BIG_BRAIN_FILE_NAME = "Big_brain.nii"
 IN_VIVO_FILE_NAME = "In_vivo.nii"
@@ -17,7 +17,7 @@ EX_VIVO_FILE_NAME = "Ex_vivo.nii"
 WHITE_TRACTS_FILE_NAME = "3Dvolume"
 STUDENT_STRUCTURES_FILE_NAME = "G_VT23_practical_dis_MRI_.csv"
 BACKUP_PATH = r"C:\BV4\STATEX\Backups\Ordinarie_HT23"
-MARKUP_PATH = r"G:\My Drive\Course\BV4\Students\Markups"
+MARKUP_PATH = r"G:\Min enhet\Neuro\BV4\Students\Markups"
 
 LOAD_DATASETS = True
 
@@ -26,9 +26,9 @@ IN_VIVO = "in_vivo"
 EX_VIVO = "ex_vivo"
 TRACTS_3D = "Tracts_3D"
 
-BIG_BRAIN_VOLUME_NAME = "vtkMRMLScalarVolumeNode3"
-IN_VIVO_VOLUME_NAME = "vtkMRMLScalarVolumeNode1"
-EX_VIVO_VOLUME_NAME = "vtkMRMLScalarVolumeNode2"
+BIG_BRAIN_VOLUME_NAME = "vtkMRMLScalarVolumeNode1"
+IN_VIVO_VOLUME_NAME = "vtkMRMLScalarVolumeNode2"
+EX_VIVO_VOLUME_NAME = "vtkMRMLScalarVolumeNode3"
 
 NUMBER_OF_QUESTIONS = 10
 QUIT_CODE = 1234
@@ -321,15 +321,15 @@ class ExamApplication(SlicerApplication):
                             print("Frågan är ej besvarad.\n")
 
             # Spara control points till en json-fil
-            if os.path.isfile(os.path.join(MARKUP_PATH, filename)):
-                print("Filen existerar redan")
-                print("Fråga om hjälp")
-                print("Spara filen manuellt.")
-                input()
-            else:
-                self.saveNodeToFile(node, os.path.join(MARKUP_PATH, filename))
-                print(f"Filen {os.path.join(MARKUP_PATH, filename)} med markups har sparats.")
-                print("Vänligen dubbelkolla att filen existerar.")
+            #if os.path.isfile(os.path.join(MARKUP_PATH, filename)):
+            #    print("Filen existerar redan")
+            #    print("Fråga om hjälp")
+            #    print("Spara filen manuellt.")
+            #    input()
+            #else:
+            self.saveNodeToFile(node, os.path.join(MARKUP_PATH, filename))
+            print(f"Filen {os.path.join(MARKUP_PATH, filename)} med markups har sparats.")
+            print("Vänligen dubbelkolla att filen existerar.")
 
 class GradingApplication(SlicerApplication):
     def run(self):
