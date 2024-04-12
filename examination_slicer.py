@@ -9,12 +9,12 @@ import os
 import csv
 
 SCENE_PATH = r"G:\My Drive\Neuro\Dataset"
-STUDENT_STRUCTURES_PATH = r"G:\My Drive\Course\BV4\Students"
+STUDENT_STRUCTURES_PATH = r"G:\My Drive\Neuro\BV4\Students"
 DATASETS_FILE_NAME = "2022-12-16-Scene.mrml" #"open_me.mrb"
-BIG_BRAIN_FILE_NAME = "Big_brain.nii"
+BIG_BRAIN_FILE_NAME = "Big_brain.nii.gz"
 IN_VIVO_FILE_NAME = "In_vivo.nii"
-EX_VIVO_FILE_NAME = "Ex_vivo.nii"
-WHITE_TRACTS_FILE_NAME = "3Dvolume"
+EX_VIVO_FILE_NAME = "Ex_vivo.nii.gz"
+WHITE_TRACTS_FILE_NAME = "White_matter_tracts_1.nrrd"
 STUDENT_STRUCTURES_FILE_NAME = "G_VT23_practical_dis_MRI_.csv"
 BACKUP_PATH = r"C:\BV4\STATEX\Backups\Ordinarie_HT23"
 MARKUP_PATH = r"G:\My Drive\Course\BV4\Students\Markups"
@@ -44,14 +44,14 @@ class SlicerApplication:
 
     # Läser in dataseten big_brain, in_vivo, ex_vivo och tracts_3d
     def loadDatasets(big_brain=True, in_vivo=True, ex_vivo=True, tracts_3d=True):
-        slicer.util.loadScene(os.path.join(SCENE_PATH, DATASETS_FILE_NAME))
-        #if big_brain:
-        #    slicer.util.loadVolume(os.path.join(SCENE_PATH, BIG_BRAIN_FILE_NAME))
-        #if in_vivo:
-        #    slicer.util.loadVolume(os.path.join(SCENE_PATH, IN_VIVO_FILE_NAME))
-        #if ex_vivo:
-        #    slicer.util.loadVolume(os.path.join(SCENE_PATH, EX_VIVO_FILE_NAME))
-        #slicer.util.loadVolume(os.path.join(SCENE_PATH, WHITE_TRACTS_FILE_NAME))
+        #slicer.util.loadScene(os.path.join(SCENE_PATH, DATASETS_FILE_NAME))
+        if big_brain:
+            slicer.util.loadVolume(os.path.join(SCENE_PATH, BIG_BRAIN_FILE_NAME))
+        if in_vivo:
+            slicer.util.loadVolume(os.path.join(SCENE_PATH, IN_VIVO_FILE_NAME))
+        if ex_vivo:
+            slicer.util.loadVolume(os.path.join(SCENE_PATH, EX_VIVO_FILE_NAME))
+        slicer.util.loadSegmentation(os.path.join(SCENE_PATH, WHITE_TRACTS_FILE_NAME))
 
 
     def displaySelectVolume(self, a):
