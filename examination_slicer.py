@@ -8,15 +8,16 @@ __email__ = "christian.andersson.2@stud.ki.se"
 import os
 import csv
 
-SCENE_PATH = r"G:\My Drive\Course\BV4\Neuroworkshop"
-STUDENT_STRUCTURES_PATH = r"G:\My Drive\Course\BV4\Students"
+DATASET_PATH = r"G:\My Drive\Neuro\Dataset"
+STUDENT_STRUCTURES_PATH = r"G:\My Drive\Neuro\BV4\Students"
 DATASETS_FILE_NAME = "2022-12-16-Scene.mrml" #"open_me.mrb"
-BIG_BRAIN_FILE_NAME = "Big_brain.nii"
-IN_VIVO_FILE_NAME = "In_vivo.nrrd"
-EX_VIVO_FILE_NAME = "Synthesized_FLASH25_in_MNI_v2_500um.nii"
+BIG_BRAIN_FILE_NAME = "Big_brain.nii.gz"
+IN_VIVO_FILE_NAME = "In_vivo.nii"
+EX_VIVO_FILE_NAME = "Ex_vivo.nii.gz"
+WHITE_TRACTS_FILE_NAME = "White_matter_tracts_1.nrrd"
 STUDENT_STRUCTURES_FILE_NAME = "G_VT23_practical_dis_MRI_.csv"
 BACKUP_PATH = r"C:\BV4\STATEX\Backups\Ordinarie_HT23"
-MARKUP_PATH = r"G:\My Drive\Course\BV4\Students\Markups")
+MARKUP_PATH = r"G:\My Drive\Course\BV4\Students\Markups"
 
 LOAD_DATASETS = True
 
@@ -25,12 +26,12 @@ IN_VIVO = "in_vivo"
 EX_VIVO = "ex_vivo"
 TRACTS_3D = "Tracts_3D"
 
-BIG_BRAIN_VOLUME_NAME = "vtkMRMLScalarVolumeNode3"
-IN_VIVO_VOLUME_NAME = "vtkMRMLScalarVolumeNode1"
-EX_VIVO_VOLUME_NAME = "vtkMRMLScalarVolumeNode2"
+BIG_BRAIN_VOLUME_NAME = "vtkMRMLScalarVolumeNode1"
+IN_VIVO_VOLUME_NAME = "vtkMRMLScalarVolumeNode2"
+EX_VIVO_VOLUME_NAME = "vtkMRMLScalarVolumeNode3"
 
 NUMBER_OF_QUESTIONS = 10
-QUIT_CODE = 123456
+QUIT_CODE = 1234
 
 # eller Classes: Exam, Student
 # TODO: Vad gör SetLocked?
@@ -43,13 +44,15 @@ class SlicerApplication:
 
     # Läser in dataseten big_brain, in_vivo, ex_vivo och tracts_3d
     def loadDatasets(big_brain=True, in_vivo=True, ex_vivo=True, tracts_3d=True):
-        slicer.util.loadScene(os.path.join(SCENE_PATH, DATASETS_FILE_NAME))
-        #if big_brain:
-        #    slicer.util.loadVolume(PROJECT_FOLDER_PATH + BIG_BRAIN_FILE_NAME)
-        #if in_vivo:
-        #    slicer.util.loadVolume(PROJECT_FOLDER_PATH + IN_VIVO_FILE_NAME)
-        #if ex_vivo:
-        #    slicer.util.loadVolume(PROJECT_FOLDER_PATH + EX_VIVO_FILE_NAME)
+        #slicer.util.loadScene(os.path.join(DATASET_PATH, DATASETS_FILE_NAME))
+        if big_brain:
+            slicer.util.loadVolume(os.path.join(DATASET_PATH, BIG_BRAIN_FILE_NAME))
+        if in_vivo:
+            slicer.util.loadVolume(os.path.join(DATASET_PATH, IN_VIVO_FILE_NAME))
+        if ex_vivo:
+            slicer.util.loadVolume(os.path.join(DATASET_PATH, EX_VIVO_FILE_NAME))
+        slicer.util.loadSegmentation(os.path.join(DATASET_PATH, WHITE_TRACTS_FILE_NAME))
+
 
     def displaySelectVolume(self, a):
         layoutManager = slicer.app.layoutManager()
@@ -256,7 +259,7 @@ class ExamApplication(SlicerApplication):
             while True:
                 self.updateAnsweredQuestions(node)
                 self.printStructures(structures)
-                question_option = self.inputNumberInRange("\nVilken fråga vill du besvara?\n", 1, NUMBER_OF_QUESTIONS, [QUIT_CODE]) - 1 # anpassa för listindex
+                question_option = self.inputNumberInRange(f"\nVilken fråga vill du besvara/kolla på?\n", 1, NUMBER_OF_QUESTIONS, [QUIT_CODE]) - 1 # anpassa för listindex
                 # ha detta i en funktion?
                 if question_option == QUIT_CODE - 1:
                     amount_answered_questions = self.answered_questions.count(True)
@@ -271,36 +274,31 @@ class ExamApplication(SlicerApplication):
                             continue
                     except:
                         continue
-
                 self.printStructure(structures[question_option])
                 self.changeDataset(structures[question_option]["Dataset"])
                 node.GetDisplayNode().SetActiveControlPoint(question_option)
-
-                action_option = self.inputNumberInRange("Vad vill du göra?\n1 - sätta ny punkt\n2 - kolla på punkten\n3 - svara på en annan struktur\n", 1, 3) # fokusera på? centrera på?
-                if action_option == 1:
-                    # Ändra koordinater för control point
-                    replace_option = 1 # Om det inte finns en placerad control point behöver man ej ha input
-                    if self.checkIfControlPointExists(question_option):
-                        # Om det finns en tidigare placerad control point
-                        replace_option = self.inputNumberInRange("Det här kommer ta bort din gamla markering. Är du säker på att du vill fortsätta?\n1 - Ja\n2 - Nej\n", 1, 2) # fortsätt/avbryt
-                    if replace_option == 1:
-                        # Placera en ny control point
-                        self.setNewControlPoint(node, question_option)
-                        try:
-                            input("Placera punkten. Tryck Enter för att fortsätta.")
-                            # Gör en backup på node
-                            self.saveNodeToFile(node, os.path.join(BACKUP_PATH, filename))
-                        except:
-                            # Hamnar här ibland
-                            pass
-                    elif replace_option == 2:
+                replace_option = 1 # Om det inte finns en placerad control point behöver man ej ha input
+                if self.checkIfControlPointExists(question_option):
+                    # Om det finns en tidigare placerad control point
+                    # Centrera på koordinaterna för control point om den existerar
+                    self.centreOnControlPoint(node, question_option, structures[question_option]["Dataset"])
+                    replace_option = self.inputNumberInRange("\nVisar din markering. Vill du ersätta den med en ny markering?\n1 - Ja\n2 - Nej\n", 1, 2) # fortsätt/avbryt
+                if replace_option == 1:
+                    # Placera en ny control point
+                    try:
+                        input("\nLeta upp strukturen. Tryck sedan Enter för att placera punkten.")
+                    except:
+                        # Hamnar här ibland
                         pass
-                elif action_option == 2:
-                    if self.checkIfControlPointExists(question_option):
-                        # Centrera på koordinaterna för control point om den existerar
-                        self.centreOnControlPoint(node, question_option, structures[question_option]["Dataset"])
-                elif action_option == 3:
-                    # Svara på en annan fråga
+                    self.setNewControlPoint(node, question_option)
+                    try:
+                        input("\nTryck Enter när du placerat ut punkten.")
+                    except:
+                        # Hamnar här ibland
+                        pass
+                    # Gör en backup på node
+                    self.saveNodeToFile(node, os.path.join(BACKUP_PATH, filename))
+                elif replace_option == 2:
                     continue
 
             # Spara control points till en json-fil
