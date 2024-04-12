@@ -19,7 +19,7 @@ STUDENT_STRUCTURES_FILE_NAME = "G_VT23_practical_dis_MRI_.csv"
 BACKUP_PATH = r"C:\BV4\STATEX\Backups\Ordinarie_HT23"
 MARKUP_PATH = r"G:\My Drive\Course\BV4\Students\Markups"
 
-LOAD_DATASETS = False
+LOAD_DATASETS = True
 
 BIG_BRAIN = "Big_Brain"
 IN_VIVO = "in_vivo"
