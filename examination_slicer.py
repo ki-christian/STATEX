@@ -19,16 +19,16 @@ STUDENT_STRUCTURES_FILE_NAME = "G_VT23_practical_dis_MRI_.csv"
 BACKUP_PATH = r"C:\BV4\STATEX\Backups\Ordinarie_HT23"
 MARKUP_PATH = r"G:\My Drive\Course\BV4\Students\Markups"
 
-LOAD_DATASETS = True
+LOAD_DATASETS = False
 
 BIG_BRAIN = "Big_Brain"
 IN_VIVO = "in_vivo"
 EX_VIVO = "ex_vivo"
 TRACTS_3D = "Tracts_3D"
 
-BIG_BRAIN_VOLUME_NAME = "vtkMRMLScalarVolumeNode3"
-IN_VIVO_VOLUME_NAME = "vtkMRMLScalarVolumeNode1"
-EX_VIVO_VOLUME_NAME = "vtkMRMLScalarVolumeNode2"
+BIG_BRAIN_VOLUME_NAME = "vtkMRMLScalarVolumeNode1"
+IN_VIVO_VOLUME_NAME = "vtkMRMLScalarVolumeNode2"
+EX_VIVO_VOLUME_NAME = "vtkMRMLScalarVolumeNode3"
 
 NUMBER_OF_QUESTIONS = 10
 QUIT_CODE = 1234
