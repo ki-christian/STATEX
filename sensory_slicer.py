@@ -13,7 +13,7 @@ SENSORY_STRUCTURES_PATH = r"G:\My Drive\Neuro\BV4\Slicer intro"
 DATASETS_FILE_NAME = "Start_slicerintro.mrml"
 SENSORY_STRUCTURES_FILE_NAME = "Slicer_intro.csv"
 
-LOAD_DATASETS = True
+LOAD_DATASETS = False
 
 BIG_BRAIN = "Big_Brain"
 IN_VIVO = "in_vivo"
