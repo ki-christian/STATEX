@@ -20,8 +20,8 @@ IN_VIVO = "in_vivo"
 EX_VIVO = "ex_vivo"
 TRACTS_3D = "3d"
 
-BIG_BRAIN_VOLUME_NAME = "vtkMRMLScalarVolumeNode3"
-IN_VIVO_VOLUME_NAME = "vtkMRMLScalarVolumeNode1"
+BIG_BRAIN_VOLUME_NAME = "vtkMRMLScalarVolumeNode1"
+IN_VIVO_VOLUME_NAME = "vtkMRMLScalarVolumeNode3"
 EX_VIVO_VOLUME_NAME = "vtkMRMLScalarVolumeNode2"
 
 NUMBER_OF_QUESTIONS = 30
