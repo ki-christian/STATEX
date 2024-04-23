@@ -2,7 +2,7 @@
 i 3D Slicer i kursen Basvetenskap 4 på Karolinska Institutet."""
 
 __author__ = "Christian Andersson"
-#__version__ = "1.0"
+__version__ = "1.0"
 __email__ = "christian.andersson.2@stud.ki.se"
 
 import csv
