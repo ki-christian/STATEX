@@ -375,7 +375,7 @@ class ExampleApplication(SlicerApplication):
                         pass
                     self.setNewControlPoint(node, question_option)
                     try:
-                        input("\nTryck Enter när du placerat ut punkten.")
+                        input("\nKlicka här och tryck sedan Enter när du har placerat ut punkten.")
                     except:
                         # Hamnar här ibland
                         pass
