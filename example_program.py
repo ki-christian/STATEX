@@ -5,8 +5,6 @@ __author__ = "Christian Andersson"
 __version__ = "1.0"
 __email__ = "christian.andersson.2@stud.ki.se"
 
-import csv
-
 DATASETS_FILE_NAME = "open_me.mrb"
 
 BIG_BRAIN = "Big_Brain"
@@ -50,7 +48,7 @@ class SlicerApplication:
                 continue
         return exam_nr
 
-    # Öppnar csv-filen med strukturer och läser in alla rader tillhörande exam_nr
+    # Läser in alla rader tillhörande exam_nr
     def retrieveStructures(self, exam_nr) -> list:
         structures = {
             241: [{'Structure': 'nucleus caudatus',
