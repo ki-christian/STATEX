@@ -7,19 +7,21 @@ __email__ = "christian.andersson.2@stud.ki.se"
 
 import os
 import csv
+import re
 
-DATASET_PATH = r"G:\My Drive\Neuro\Dataset"
-STUDENT_STRUCTURES_PATH = r"G:\My Drive\Neuro\BV4\Students"
-DATASETS_FILE_NAME = "2022-12-16-Scene.mrml" #"open_me.mrb"
+EXAM_FOLDER_PATH = r"C:\exam"
+DATASET_PATH = os.path.join(EXAM_FOLDER_PATH, "Dataset")
+STUDENT_STRUCTURES_PATH = os.path.join(EXAM_FOLDER_PATH, "Exams")
+DATASETS_FILE_NAME = "2024-05-06-Scene.mrml" #"open_me.mrb"
 BIG_BRAIN_FILE_NAME = "Big_brain.nii.gz"
 IN_VIVO_FILE_NAME = "In_vivo.nii"
 EX_VIVO_FILE_NAME = "Ex_vivo.nii.gz"
 WHITE_TRACTS_FILE_NAME = "White_matter_tracts_1.nrrd"
-STUDENT_STRUCTURES_FILE_NAME = "G_VT23_practical_dis_MRI_.csv"
-BACKUP_PATH = r"C:\BV4\STATEX\Backups\Ordinarie_HT23"
-MARKUP_PATH = r"G:\My Drive\Course\BV4\Students\Markups"
+STUDENT_STRUCTURES_FILE_NAME = "A_HT23_dis_exam_MRI__bv4.csv"
+BACKUP_PATH = os.path.join(EXAM_FOLDER_PATH, "Backups")
+MARKUP_PATH = os.path.join(EXAM_FOLDER_PATH, "markups")
 
-LOAD_DATASETS = True
+LOAD_DATASETS = False
 
 BIG_BRAIN = "Big_Brain"
 IN_VIVO = "in_vivo"
@@ -44,14 +46,14 @@ class SlicerApplication:
 
     # Läser in dataseten big_brain, in_vivo, ex_vivo och tracts_3d
     def loadDatasets(big_brain=True, in_vivo=True, ex_vivo=True, tracts_3d=True):
-        #slicer.util.loadScene(os.path.join(DATASET_PATH, DATASETS_FILE_NAME))
-        if big_brain:
-            slicer.util.loadVolume(os.path.join(DATASET_PATH, BIG_BRAIN_FILE_NAME))
-        if in_vivo:
-            slicer.util.loadVolume(os.path.join(DATASET_PATH, IN_VIVO_FILE_NAME))
-        if ex_vivo:
-            slicer.util.loadVolume(os.path.join(DATASET_PATH, EX_VIVO_FILE_NAME))
-        slicer.util.loadSegmentation(os.path.join(DATASET_PATH, WHITE_TRACTS_FILE_NAME))
+        slicer.util.loadScene(os.path.join(DATASET_PATH, DATASETS_FILE_NAME))
+        #if big_brain:
+        #    slicer.util.loadVolume(os.path.join(DATASET_PATH, BIG_BRAIN_FILE_NAME))
+        #if in_vivo:
+        #    slicer.util.loadVolume(os.path.join(DATASET_PATH, IN_VIVO_FILE_NAME))
+        #if ex_vivo:
+        #    slicer.util.loadVolume(os.path.join(DATASET_PATH, EX_VIVO_FILE_NAME))
+        #slicer.util.loadSegmentation(os.path.join(DATASET_PATH, WHITE_TRACTS_FILE_NAME))
 
 
     def displaySelectVolume(self, a):
@@ -71,7 +73,7 @@ class SlicerApplication:
     def readExamNr(self):
         while True:
             try:
-                exam_nr = int(input("Ange exam nr: "))
+                exam_nr = input("Ange exam nr: ")
                 break
             except:
                 print("Ogiltig input. Försök igen")
@@ -84,7 +86,7 @@ class SlicerApplication:
         with open(os.path.join(STUDENT_STRUCTURES_PATH, STUDENT_STRUCTURES_FILE_NAME), encoding="utf-8") as file:
             reader = csv.DictReader(file, delimiter=";")
             for row in reader:
-                if int(row["exam_nr"]) == exam_nr:
+                if row["exam_nr"] == exam_nr:
                     structures.append(row)
         return structures
 
@@ -125,8 +127,8 @@ class SlicerApplication:
     # Lägger till en nod med namnet exam_nr och lägger till tillhörande control points
     # för varje struktur i structures. Namnet på varje control point blir strukturens
     # namn och beskrivningen blir vilket nummer strukturen är.
-    def addNodeAndControlPoints(self, exam_nr, structures):
-        node = slicer.mrmlScene.AddNewNodeByClass('vtkMRMLMarkupsFiducialNode', str(exam_nr))
+    def addNodeAndControlPoints(self, exam_nr, student_name, structures):
+        node = slicer.mrmlScene.AddNewNodeByClass('vtkMRMLMarkupsFiducialNode', f"{exam_nr}_{student_name}")
         node.SetLocked(1)
         node.AddNControlPoints(10, "", [0, 0, 0])
         for _index, structure in enumerate(structures):
@@ -225,8 +227,11 @@ class ExamApplication(SlicerApplication):
 
             while True:
                 # kanske studentLoop
+                student_name = input("Skriv in ditt förnamn och efternamn: ")
+                print(f"Hej, {student_name}.")
+
                 exam_nr = self.readExamNr()
-                if exam_nr == QUIT_CODE:
+                if exam_nr == str(QUIT_CODE):
                     return
                 structures = self.retrieveStructures(exam_nr)
                 # Kontrollera att rätt antal strukturer har lästs in
@@ -244,17 +249,17 @@ class ExamApplication(SlicerApplication):
                 if is_correct_exam_nr == 2:
                     continue
             # Markups sparas till filename
-            filename = f"{exam_nr}.mrk.json"
+            filename = f"{exam_nr}_{student_name}.mrk.json"
             if os.path.isfile(os.path.join(BACKUP_PATH, filename)):
                 print(f"En fil med markups existerar redan för exam nr {exam_nr}")
                 read_file_option = self.inputNumberInRange("Vill du läsa in den?\n1 - Ja\n2 - Nej\n", 1, 2)
                 if read_file_option == 1:
                     node = self.loadNodeFromFile(os.path.join(BACKUP_PATH, filename))
                 elif read_file_option == 2:
-                    node = self.addNodeAndControlPoints(exam_nr, structures)
+                    node = self.addNodeAndControlPoints(exam_nr, student_name, structures)
                     pass
             else:
-                node = self.addNodeAndControlPoints(exam_nr, structures)
+                node = self.addNodeAndControlPoints(exam_nr, student_name, structures)
 
             while True:
                 self.updateAnsweredQuestions(node)
@@ -268,7 +273,7 @@ class ExamApplication(SlicerApplication):
                         quit_input = input(f"Är du säker att du vill avsluta? Skriv in {QUIT_CODE} igen för att avsluta\n")
                         if quit_input == str(QUIT_CODE):
                             # TODO: gör något annat
-                            print(f"Sessionen för student med exam nr: {exam_nr} har avslutats")
+                            print(f"Sessionen för student {student_name} med exam nr: {exam_nr} har avslutats")
                             break
                         else:
                             continue
@@ -292,7 +297,7 @@ class ExamApplication(SlicerApplication):
                         pass
                     self.setNewControlPoint(node, question_option)
                     try:
-                        input("\nTryck Enter när du placerat ut punkten.")
+                        input("\nKlicka här och tryck sedan Enter när du har placerat ut punkten.")
                     except:
                         # Hamnar här ibland
                         pass
@@ -324,7 +329,7 @@ class GradingApplication(SlicerApplication):
 
             while True:
                 exam_nr = self.readExamNr()
-                if exam_nr == QUIT_CODE:
+                if exam_nr == str(QUIT_CODE):
                     return
                 structures = self.retrieveStructures(exam_nr)
                 # Kontrollera att rätt antal strukturer har lästs in
@@ -338,17 +343,33 @@ class GradingApplication(SlicerApplication):
                     print(f"ERROR: Antal inlästa strukturer för exam nr: {exam_nr} överensstämmer ej med antalet strukturer som ska läsas in\n")
                     input()
 
-            # Markups finns sparade på filename
-            filename = f"{exam_nr}.mrk.json"
-            if os.path.isfile(os.path.join(MARKUP_PATH, filename)):
-                node = self.loadNodeFromFile(os.path.join(MARKUP_PATH, filename))
-            else:
+
+            markup_regex = re.compile(f'({exam_nr})_(.*)(.mrk.json)')
+            matching_files = []
+
+            for file in os.listdir(MARKUP_PATH):
+                if markup_regex.match(file):
+                    matching_files.append(file)
+
+            if len(matching_files) == 0:
                 print(f"En markupfil kunde ej hittas för exam nr: {exam_nr}")
                 print("Försök igen senare")
                 input("Tryck Enter för att fortsätta")
                 continue
+            elif len(matching_files) == 1:
+                grade_option = 0
+            else:
+                print(f"Det finns fler än en fil med exam nr: {exam_nr}")
+                for index, filename in enumerate(matching_files):
+                    print(f"{index + 1}: {filename}")
+                grade_option = self.inputNumberInRange("\nVilken vill du rätta?\n", 1, len(matching_files)) - 1
 
+            # Markups finns sparade på filename
+            filename = matching_files[grade_option]
+            node = self.loadNodeFromFile(os.path.join(MARKUP_PATH, filename))
+            # if os.path.isfile(os.path.join(MARKUP_PATH, filename)):
             self.updateAnsweredQuestions(node)
+            print(f"Rättar {filename}\n")
 
             while True:
                 self.printStructures(structures)
