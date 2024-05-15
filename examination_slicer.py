@@ -29,9 +29,9 @@ IN_VIVO = "in_vivo"
 EX_VIVO = "ex_vivo"
 TRACTS_3D = "Tracts_3D"
 
-BIG_BRAIN_VOLUME_NAME = "vtkMRMLScalarVolumeNode3"
-IN_VIVO_VOLUME_NAME = "vtkMRMLScalarVolumeNode1"
-EX_VIVO_VOLUME_NAME = "vtkMRMLScalarVolumeNode2"
+BIG_BRAIN_VOLUME_NAME = "vtkMRMLScalarVolumeNode1"
+IN_VIVO_VOLUME_NAME = "vtkMRMLScalarVolumeNode2"
+EX_VIVO_VOLUME_NAME = "vtkMRMLScalarVolumeNode3"
 
 NUMBER_OF_QUESTIONS = 10
 QUIT_CODE = 1234
