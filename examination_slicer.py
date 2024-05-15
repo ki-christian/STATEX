@@ -29,9 +29,9 @@ IN_VIVO = "in_vivo"
 EX_VIVO = "ex_vivo"
 TRACTS_3D = "Tracts_3D"
 
-BIG_BRAIN_VOLUME_NAME = "vtkMRMLScalarVolumeNode1"
-IN_VIVO_VOLUME_NAME = "vtkMRMLScalarVolumeNode2"
-EX_VIVO_VOLUME_NAME = "vtkMRMLScalarVolumeNode3"
+BIG_BRAIN_VOLUME_NAME = "vtkMRMLScalarVolumeNode3"
+IN_VIVO_VOLUME_NAME = "vtkMRMLScalarVolumeNode1"
+EX_VIVO_VOLUME_NAME = "vtkMRMLScalarVolumeNode2"
 
 NUMBER_OF_QUESTIONS = 10
 QUIT_CODE = 1234
@@ -346,11 +346,11 @@ class GradingApplication(SlicerApplication):
             markup_regex = re.compile(f'({exam_nr})_(.*)(.mrk.json)')
             matching_files = []
 
-            subdirectories = [x[0] for x in os.walk(directory)]
+            subdirectories = [x[0] for x in os.walk(G_DRIVE_MARKUP_PATH)]
             for subdirectory in subdirectories:
                 for file in os.listdir(subdirectory):
                     if markup_regex.match(file):
-                        matching_files.append(file)
+                        matching_files.append({"filename": file, "room_path": subdirectory})
 
             if len(matching_files) == 0:
                 print(f"En markupfil kunde ej hittas för exam nr: {exam_nr}")
@@ -361,16 +361,18 @@ class GradingApplication(SlicerApplication):
                 grade_option = 0
             else:
                 print(f"Det finns fler än en fil med exam nr: {exam_nr}")
-                for index, filename in enumerate(matching_files):
-                    print(f"{index + 1}: {filename}")
+                for index, file in enumerate(matching_files):
+                    print(f"{index + 1}: {file.get('filename')}")
                 grade_option = self.inputNumberInRange("\nVilken vill du rätta?\n", 1, len(matching_files)) - 1
 
             # Markups finns sparade på filename
-            filename = matching_files[grade_option]
-            node = self.loadNodeFromFile(os.path.join(MARKUP_PATH, filename))
+            file = matching_files[grade_option]
+            filename = file["filename"]
+            room_path = file["room_path"]
+            node = self.loadNodeFromFile(os.path.join(room_path, filename))
             # if os.path.isfile(os.path.join(MARKUP_PATH, filename)):
             self.updateAnsweredQuestions(node)
-            print(f"Rättar {filename}\n")
+            print(f"Rättar {filename} i {room_path}\n")
 
             while True:
                 self.printStructures(structures)
