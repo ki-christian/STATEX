@@ -20,6 +20,7 @@ WHITE_TRACTS_FILE_NAME = "White_matter_tracts_1.nrrd"
 STUDENT_STRUCTURES_FILE_NAME = "A_HT23_dis_exam_MRI__bv4.csv"
 BACKUP_PATH = os.path.join(EXAM_FOLDER_PATH, "Backups")
 MARKUP_PATH = os.path.join(EXAM_FOLDER_PATH, "markups")
+G_DRIVE_MARKUP_PATH = r"G:\Min enhet\Neuro\BV4\EXAM 05-16\MARKUPS"
 
 LOAD_DATASETS = False
 
@@ -54,7 +55,6 @@ class SlicerApplication:
         #if ex_vivo:
         #    slicer.util.loadVolume(os.path.join(DATASET_PATH, EX_VIVO_FILE_NAME))
         #slicer.util.loadSegmentation(os.path.join(DATASET_PATH, WHITE_TRACTS_FILE_NAME))
-
 
     def displaySelectVolume(self, a):
         layoutManager = slicer.app.layoutManager()
@@ -343,13 +343,14 @@ class GradingApplication(SlicerApplication):
                     print(f"ERROR: Antal inlästa strukturer för exam nr: {exam_nr} överensstämmer ej med antalet strukturer som ska läsas in\n")
                     input()
 
-
             markup_regex = re.compile(f'({exam_nr})_(.*)(.mrk.json)')
             matching_files = []
 
-            for file in os.listdir(MARKUP_PATH):
-                if markup_regex.match(file):
-                    matching_files.append(file)
+            subdirectories = [x[0] for x in os.walk(directory)]
+            for subdirectory in subdirectories:
+                for file in os.listdir(subdirectory):
+                    if markup_regex.match(file):
+                        matching_files.append(file)
 
             if len(matching_files) == 0:
                 print(f"En markupfil kunde ej hittas för exam nr: {exam_nr}")
