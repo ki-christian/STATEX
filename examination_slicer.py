@@ -2,7 +2,7 @@
 i kursen Basvetenskap 4 på Karolinska Institutet."""
 
 __author__ = "Christian Andersson"
-#__version__ = "1.0"
+__version__ = "1.0"
 __email__ = "christian.andersson.2@stud.ki.se"
 
 import os
@@ -107,8 +107,8 @@ class SlicerApplication:
 
     # Ändrar nuvarande dataset till specificerat dataset
     def changeDataset(self, dataset):
-        if dataset.lower() == self.current_dataset.lower():
-            return
+        #if dataset.lower() == self.current_dataset.lower():
+        #    return
         if dataset.lower()  == BIG_BRAIN.lower():
             self.displaySelectVolume(BIG_BRAIN_VOLUME_NAME)
             self.current_dataset = BIG_BRAIN
