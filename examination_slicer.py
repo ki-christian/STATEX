@@ -9,7 +9,7 @@ import os
 import csv
 import re
 
-EXAM_FOLDER_PATH = r"C:\exam"
+EXAM_FOLDER_PATH = r"C:\Exam program"
 DATASET_PATH = os.path.join(EXAM_FOLDER_PATH, "Dataset")
 STUDENT_STRUCTURES_PATH = os.path.join(EXAM_FOLDER_PATH, "Exams")
 DATASETS_FILE_NAME = "2024-05-06-Scene.mrml" #"open_me.mrb"
