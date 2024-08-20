@@ -2,7 +2,7 @@
 i kursen Basvetenskap 4 på Karolinska Institutet."""
 
 __author__ = "Christian Andersson"
-__version__ = "1.0"
+__version__ = "1.1"
 __email__ = "christian.andersson.2@stud.ki.se"
 
 import os
@@ -10,17 +10,19 @@ import csv
 import re
 
 EXAM_FOLDER_PATH = r"C:\Exam program"
+MEGA_FOLDER_PATH = r"C:\Mega\Restexamination 2024-08-23"
 DATASET_PATH = os.path.join(EXAM_FOLDER_PATH, "Dataset")
-STUDENT_STRUCTURES_PATH = os.path.join(EXAM_FOLDER_PATH, "Exams")
+STUDENT_STRUCTURES_PATH = os.path.join(MEGA_FOLDER_PATH, "Exams")
 DATASETS_FILE_NAME = "2024-05-06-Scene.mrml" #"open_me.mrb"
 BIG_BRAIN_FILE_NAME = "Big_brain.nii.gz"
 IN_VIVO_FILE_NAME = "In_vivo.nii"
 EX_VIVO_FILE_NAME = "Ex_vivo.nii.gz"
 WHITE_TRACTS_FILE_NAME = "White_matter_tracts_1.nrrd"
 STUDENT_STRUCTURES_FILE_NAME = "Exams.csv"
-BACKUP_PATH = os.path.join(EXAM_FOLDER_PATH, "Backups")
-MARKUP_PATH = os.path.join(EXAM_FOLDER_PATH, "markups")
+LOCAL_BACKUP_PATH = os.path.join(EXAM_FOLDER_PATH, "Backups")
+LOCAL_MARKUP_PATH = os.path.join(EXAM_FOLDER_PATH, "markups")
 G_DRIVE_MARKUP_PATH = r"G:\Min enhet\Neuro\BV4\EXAM 05-16\MARKUPS"
+MEGA_MARKUP_PATH = os.path.join(MEGA_FOLDER_PATH, "Markups")
 
 LOAD_DATASETS = False
 
@@ -216,8 +218,16 @@ class ExamApplication(SlicerApplication):
     def run(self):
         super().run()
 
-        if not os.path.isdir(BACKUP_PATH):
-            os.mkdir(BACKUP_PATH)
+        while True:
+            try:
+                flip_computer = int(input("Skriv in numret på Flip-datorn: "))
+                if flip_computer >= 1 and flip_computer <= 17:
+                    break
+            except:
+                print("Ange ett nummer mellan 1 och 17")
+
+        if not os.path.isdir(LOCAL_BACKUP_PATH):
+            os.mkdir(LOCAL_BACKUP_PATH)
 
         while True:
             # Återställer fönstrena och byter till big brain vid ny användare
@@ -250,11 +260,11 @@ class ExamApplication(SlicerApplication):
                     continue
             # Markups sparas till filename
             filename = f"{exam_nr}_{student_name}.mrk.json"
-            if os.path.isfile(os.path.join(BACKUP_PATH, filename)):
+            if os.path.isfile(os.path.join(LOCAL_BACKUP_PATH, filename)):
                 print(f"En fil med markups existerar redan för exam nr {exam_nr}")
                 read_file_option = self.inputNumberInRange("Vill du läsa in den?\n1 - Ja\n2 - Nej\n", 1, 2)
                 if read_file_option == 1:
-                    node = self.loadNodeFromFile(os.path.join(BACKUP_PATH, filename))
+                    node = self.loadNodeFromFile(os.path.join(LOCAL_BACKUP_PATH, filename))
                 elif read_file_option == 2:
                     node = self.addNodeAndControlPoints(exam_nr, student_name, structures)
                     pass
@@ -302,19 +312,21 @@ class ExamApplication(SlicerApplication):
                         # Hamnar här ibland
                         pass
                     # Gör en backup på node
-                    self.saveNodeToFile(node, os.path.join(BACKUP_PATH, filename))
+                    self.saveNodeToFile(node, os.path.join(LOCAL_BACKUP_PATH, filename))
                 elif replace_option == 2:
                     continue
 
             # Spara control points till en json-fil
-            if os.path.isfile(os.path.join(MARKUP_PATH, filename)):
+            if os.path.isfile(os.path.join(LOCAL_MARKUP_PATH, filename)) or os.path.isfile(os.path.join(os.path.join(MEGA_MARKUP_PATH, f"Flip-{flip_computer}"), filename)):
                 print("Filen existerar redan")
                 print("Fråga om hjälp")
                 print("Spara filen manuellt.")
                 input()
             else:
-                self.saveNodeToFile(node, os.path.join(MARKUP_PATH, filename))
-                print(f"Filen {os.path.join(MARKUP_PATH, filename)} med markups har sparats.")
+                self.saveNodeToFile(node, os.path.join(LOCAL_MARKUP_PATH, filename))
+                print(f"Filen {os.path.join(LOCAL_MARKUP_PATH, filename)} med markups har sparats.")
+                self.saveNodeToFile(node, os.path.join(os.path.join(MEGA_MARKUP_PATH, f"Flip-{flip_computer}"), filename))
+                print(f"Filen {os.path.join(os.path.join(MEGA_MARKUP_PATH, f'Flip-{flip_computer}'), filename)} med markups har sparats.")
                 print("Vänligen dubbelkolla att filen existerar.")
 
 class GradingApplication(SlicerApplication):
@@ -346,7 +358,7 @@ class GradingApplication(SlicerApplication):
             markup_regex = re.compile(f'({exam_nr})_(.*)(.mrk.json)')
             matching_files = []
 
-            subdirectories = [x[0] for x in os.walk(G_DRIVE_MARKUP_PATH)]
+            subdirectories = [x[0] for x in os.walk(MEGA_MARKUP_PATH)]
             for subdirectory in subdirectories:
                 for file in os.listdir(subdirectory):
                     if markup_regex.match(file):
