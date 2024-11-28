@@ -164,6 +164,7 @@ class SlicerApplication:
         #interactionNode.SetPlaceModePersistence(0)
 
     def checkIfControlPointExists(self, question_number):
+        ## MÅSTE DUBBELKOLLAS
         return self.answered_questions[question_number]
 
     # Centrerar vyerna på control point
