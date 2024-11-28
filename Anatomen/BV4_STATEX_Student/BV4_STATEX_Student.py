@@ -1,3 +1,6 @@
+# TODO: Förfina koden
+# TODO: Förfina GUI
+
 import logging
 import os
 from typing import Annotated, Optional
@@ -22,22 +25,11 @@ import os
 import csv
 import re
 
-EXAM_FOLDER_PATH = r"C:\Exam program"
 MEGA_FOLDER_PATH = r"C:\Users\Christian\Documents\Tutor"
-DATASET_PATH = os.path.join(EXAM_FOLDER_PATH, "Dataset")
 STUDENT_STRUCTURES_PATH = os.path.join(MEGA_FOLDER_PATH, "Exams")
-DATASETS_FILE_NAME = "2024-05-06-Scene.mrml" #"open_me.mrb"
-BIG_BRAIN_FILE_NAME = "Big_brain.nii.gz"
-IN_VIVO_FILE_NAME = "In_vivo.nii"
-EX_VIVO_FILE_NAME = "Ex_vivo.nii.gz"
-WHITE_TRACTS_FILE_NAME = "White_matter_tracts_1.nrrd"
-STUDENT_STRUCTURES_FILE_NAME = "G_VT23_practical_dis_MRI_.csv"
-LOCAL_BACKUP_PATH = os.path.join(EXAM_FOLDER_PATH, "Backups")
-LOCAL_MARKUP_PATH = os.path.join(EXAM_FOLDER_PATH, "markups")
-G_DRIVE_MARKUP_PATH = r"G:\Min enhet\Neuro\BV4\EXAM 05-16\MARKUPS"
 MEGA_MARKUP_PATH = os.path.join(MEGA_FOLDER_PATH, "Markups")
-
-LOAD_DATASETS = False
+DATASETS_FILE_NAME = "open_me.mrb" #"open_me.mrb"
+STUDENT_STRUCTURES_FILE_NAME = "G_VT23_practical_dis_MRI_.csv"
 
 BIG_BRAIN = "Big_Brain"
 IN_VIVO = "in_vivo"
@@ -49,7 +41,6 @@ IN_VIVO_VOLUME_NAME = "vtkMRMLScalarVolumeNode1"
 EX_VIVO_VOLUME_NAME = "vtkMRMLScalarVolumeNode2"
 
 NUMBER_OF_QUESTIONS = 10
-QUIT_CODE = 1234
 
 #
 # BV4_STATEX_Student
@@ -163,7 +154,7 @@ class BV4_STATEX_StudentParameterNode:
 #
 
 
-class BV4_STATEX_StudentWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
+class BV4_STATEX_StudentWidget(ScriptedLoadableModuleWidget, VTKObservationMixin): # undersök VTKObservationMixin
     """Uses ScriptedLoadableModuleWidget base class, available at:
     https://github.com/Slicer/Slicer/blob/main/Base/Python/slicer/ScriptedLoadableModule.py
     """
@@ -203,9 +194,34 @@ class BV4_STATEX_StudentWidget(ScriptedLoadableModuleWidget, VTKObservationMixin
 
         # Buttons
         #self.partialFunction = functools.partial(self.onStructureButton, number=1)
-        self.ui.pushButton_Structure_1.connect("clicked(bool)", self.onStructureButton1) ## SANNOLIKT PROBLEM
-        self.ui.pushButton_Structure_5.connect("clicked(bool)", self.onStructureButton5)
+        self.ui.pushButton_Choose_Exam_Program_Folder.connect("clicked(bool)", self.onChooseExamProgramFolderButton)
+        self.ui.pushButton_Load_Datasets.connect("clicked(bool)", self.onLoadDatasetsButton)
         self.ui.pushButton_Load_Structures.connect("clicked(bool)", self.onLoadStructuresButton)
+
+        # LÄGG TILL OBSERVERS PÅ TEXT I RUTORNA?
+        self.ui.pushButton_Structure_1.connect("clicked(bool)", lambda: self.onStructureButton(1))
+        self.ui.pushButton_Structure_2.connect("clicked(bool)", lambda: self.onStructureButton(2))
+        self.ui.pushButton_Structure_3.connect("clicked(bool)", lambda: self.onStructureButton(3))
+        self.ui.pushButton_Structure_4.connect("clicked(bool)", lambda: self.onStructureButton(4))
+        self.ui.pushButton_Structure_5.connect("clicked(bool)", lambda: self.onStructureButton(5))
+        self.ui.pushButton_Structure_6.connect("clicked(bool)", lambda: self.onStructureButton(6))
+        self.ui.pushButton_Structure_7.connect("clicked(bool)", lambda: self.onStructureButton(7))
+        self.ui.pushButton_Structure_8.connect("clicked(bool)", lambda: self.onStructureButton(8))
+        self.ui.pushButton_Structure_9.connect("clicked(bool)", lambda: self.onStructureButton(9))
+        self.ui.pushButton_Structure_10.connect("clicked(bool)", lambda: self.onStructureButton(10))
+
+        self.ui.pushButton_Place_Structure_1.connect("clicked(bool)", lambda: self.onPlaceStructureButton(1))
+        self.ui.pushButton_Place_Structure_2.connect("clicked(bool)", lambda: self.onPlaceStructureButton(2))
+        self.ui.pushButton_Place_Structure_3.connect("clicked(bool)", lambda: self.onPlaceStructureButton(3))
+        self.ui.pushButton_Place_Structure_4.connect("clicked(bool)", lambda: self.onPlaceStructureButton(4))
+        self.ui.pushButton_Place_Structure_5.connect("clicked(bool)", lambda: self.onPlaceStructureButton(5))
+        self.ui.pushButton_Place_Structure_6.connect("clicked(bool)", lambda: self.onPlaceStructureButton(6))
+        self.ui.pushButton_Place_Structure_7.connect("clicked(bool)", lambda: self.onPlaceStructureButton(7))
+        self.ui.pushButton_Place_Structure_8.connect("clicked(bool)", lambda: self.onPlaceStructureButton(8))
+        self.ui.pushButton_Place_Structure_9.connect("clicked(bool)", lambda: self.onPlaceStructureButton(9))
+        self.ui.pushButton_Place_Structure_10.connect("clicked(bool)", lambda: self.onPlaceStructureButton(10))
+
+        self.ui.pushButton_Save_And_Quit.connect("clicked(bool)", self.onSaveAndQuitButton)
 
         # Make sure parameter node is initialized (needed for module reload)
         self.initializeParameterNode()
@@ -276,42 +292,122 @@ class BV4_STATEX_StudentWidget(ScriptedLoadableModuleWidget, VTKObservationMixin
             self.ui.applyButton.toolTip = _("Select input and output volume nodes")
             self.ui.applyButton.enabled = False
 
-    def onStructureButton1(self) -> None:
-        """Run processing when user clicks "Apply" button."""
+    def onChooseExamProgramFolderButton(self) -> None:
+        """Run processing when user clicks "Ladda in strukturer" button."""
         with slicer.util.tryWithErrorDisplay(_("Failed to compute results."), waitCursor=True):
-            self.logic.onStructureButtonPressed(1)
-            str_Result = self.ui.inputBox_Exam_Number.text
-            qt.QMessageBox.information(slicer.util.mainWindow(), 'SL Tutorial: GUI HelloWorld', str_Result)
+            self.ui.lineEdit_Exam_Program_Folder.setText(self.logic.onChooseExamProgramFolderButtonPressed())
 
-    def onStructureButton5(self) -> None:
-        """Run processing when user clicks "Apply" button."""
+    def onLoadDatasetsButton(self) -> None:
+        """Run processing when user clicks "Ladda in strukturer" button."""
         with slicer.util.tryWithErrorDisplay(_("Failed to compute results."), waitCursor=True):
-            self.logic.onStructureButtonPressed(5)
-            str_Result = self.ui.inputBox_Exam_Number.text
-            qt.QMessageBox.information(slicer.util.mainWindow(), 'SL Tutorial: GUI HelloWorld', str_Result)
+            self.logic.onLoadDatasetsButtonPressed(self.ui.lineEdit_Exam_Program_Folder.text)
 
     def onLoadStructuresButton(self) -> None:
         """Run processing when user clicks "Ladda in strukturer" button."""
         with slicer.util.tryWithErrorDisplay(_("Failed to compute results."), waitCursor=True):
+            # Möjligtvis införa printdebugging? Exempelvis: Load Structure Button pressed.
             print("HELLO")
+            print("\nOBS: Kontrollera att de inlästa strukturerna överensstämmer med dina tilldelade strukturer\n")
+            # 1-17
+            flip_computer = self.ui.inputBox_Flip_Number.text # --> Flip_Computer?
+            # >= 2 ord
             student_name = self.ui.inputBox_Student_Name.text
             exam_number = self.ui.inputBox_Exam_Number.text
-            self.logic.onLoadStructuresButtonPressed(student_name, exam_number)
-            self.ui.pushButton_Structure_1.setText(f"Struktur 1: {self.logic.structures[0]['Structure']}")
-            self.ui.pushButton_Structure_2.setText(f"Struktur 2: {self.logic.structures[1]['Structure']}")
-            self.ui.pushButton_Structure_3.setText(f"Struktur 3: {self.logic.structures[2]['Structure']}")
-            self.ui.pushButton_Structure_4.setText(f"Struktur 4: {self.logic.structures[3]['Structure']}")
-            self.ui.pushButton_Structure_5.setText(f"Struktur 5: {self.logic.structures[4]['Structure']}")
-            self.ui.pushButton_Structure_6.setText(f"Struktur 6: {self.logic.structures[5]['Structure']}")
-            self.ui.pushButton_Structure_7.setText(f"Struktur 7: {self.logic.structures[6]['Structure']}")
-            self.ui.pushButton_Structure_8.setText(f"Struktur 8: {self.logic.structures[7]['Structure']}")
-            self.ui.pushButton_Structure_9.setText(f"Struktur 9: {self.logic.structures[8]['Structure']}")
-            self.ui.pushButton_Structure_10.setText(f"Struktur 10: {self.logic.structures[9]['Structure']}")
+
+            ret_value = self.logic.onLoadStructuresButtonPressed(flip_computer, student_name, exam_number)
+            # Kanske en funktion i logic-klassen med meddelande
+            if ret_value != -1:
+                # Likaså här
+                self.ui.inputBox_Flip_Number.setEnabled(False)
+                self.ui.lineEdit_Exam_Program_Folder.setEnabled(False)
+                self.ui.inputBox_Student_Name.setEnabled(False)
+                self.ui.inputBox_Exam_Number.setEnabled(False)
+                self.ui.pushButton_Structure_1.setText(self.logic.structure_buttons_texts[0])
+                self.ui.pushButton_Structure_2.setText(self.logic.structure_buttons_texts[1])
+                self.ui.pushButton_Structure_3.setText(self.logic.structure_buttons_texts[2])
+                self.ui.pushButton_Structure_4.setText(self.logic.structure_buttons_texts[3])
+                self.ui.pushButton_Structure_5.setText(self.logic.structure_buttons_texts[4])
+                self.ui.pushButton_Structure_6.setText(self.logic.structure_buttons_texts[5])
+                self.ui.pushButton_Structure_7.setText(self.logic.structure_buttons_texts[6])
+                self.ui.pushButton_Structure_8.setText(self.logic.structure_buttons_texts[7])
+                self.ui.pushButton_Structure_9.setText(self.logic.structure_buttons_texts[8])
+                self.ui.pushButton_Structure_10.setText(self.logic.structure_buttons_texts[9])
+                self.ui.pushButton_Place_Structure_1.setText(self.logic.place_structure_buttons_texts[0])
+                self.ui.pushButton_Place_Structure_2.setText(self.logic.place_structure_buttons_texts[1])
+                self.ui.pushButton_Place_Structure_3.setText(self.logic.place_structure_buttons_texts[2])
+                self.ui.pushButton_Place_Structure_4.setText(self.logic.place_structure_buttons_texts[3])
+                self.ui.pushButton_Place_Structure_5.setText(self.logic.place_structure_buttons_texts[4])
+                self.ui.pushButton_Place_Structure_6.setText(self.logic.place_structure_buttons_texts[5])
+                self.ui.pushButton_Place_Structure_7.setText(self.logic.place_structure_buttons_texts[6])
+                self.ui.pushButton_Place_Structure_8.setText(self.logic.place_structure_buttons_texts[7])
+                self.ui.pushButton_Place_Structure_9.setText(self.logic.place_structure_buttons_texts[8])
+                self.ui.pushButton_Place_Structure_10.setText(self.logic.place_structure_buttons_texts[9])
+
+    def onStructureButton(self, number) -> None:
+        """Run processing when user clicks "Apply" button."""
+        with slicer.util.tryWithErrorDisplay(_("Failed to compute results."), waitCursor=True):
+            self.logic.onStructureButtonPressed(number)
+            self.ui.pushButton_Place_Structure_1.setText(self.logic.place_structure_buttons_texts[0])
+            self.ui.pushButton_Place_Structure_2.setText(self.logic.place_structure_buttons_texts[1])
+            self.ui.pushButton_Place_Structure_3.setText(self.logic.place_structure_buttons_texts[2])
+            self.ui.pushButton_Place_Structure_4.setText(self.logic.place_structure_buttons_texts[3])
+            self.ui.pushButton_Place_Structure_5.setText(self.logic.place_structure_buttons_texts[4])
+            self.ui.pushButton_Place_Structure_6.setText(self.logic.place_structure_buttons_texts[5])
+            self.ui.pushButton_Place_Structure_7.setText(self.logic.place_structure_buttons_texts[6])
+            self.ui.pushButton_Place_Structure_8.setText(self.logic.place_structure_buttons_texts[7])
+            self.ui.pushButton_Place_Structure_9.setText(self.logic.place_structure_buttons_texts[8])
+            self.ui.pushButton_Place_Structure_10.setText(self.logic.place_structure_buttons_texts[9])
+
+    def onPlaceStructureButton(self, number) -> None:
+        """Run processing when user clicks "Apply" button."""
+        with slicer.util.tryWithErrorDisplay(_("Failed to compute results."), waitCursor=True):
+            self.logic.onPlaceStructureButtonPressed(number)
+            self.ui.pushButton_Place_Structure_1.setText(self.logic.place_structure_buttons_texts[0])
+            self.ui.pushButton_Place_Structure_2.setText(self.logic.place_structure_buttons_texts[1])
+            self.ui.pushButton_Place_Structure_3.setText(self.logic.place_structure_buttons_texts[2])
+            self.ui.pushButton_Place_Structure_4.setText(self.logic.place_structure_buttons_texts[3])
+            self.ui.pushButton_Place_Structure_5.setText(self.logic.place_structure_buttons_texts[4])
+            self.ui.pushButton_Place_Structure_6.setText(self.logic.place_structure_buttons_texts[5])
+            self.ui.pushButton_Place_Structure_7.setText(self.logic.place_structure_buttons_texts[6])
+            self.ui.pushButton_Place_Structure_8.setText(self.logic.place_structure_buttons_texts[7])
+            self.ui.pushButton_Place_Structure_9.setText(self.logic.place_structure_buttons_texts[8])
+            self.ui.pushButton_Place_Structure_10.setText(self.logic.place_structure_buttons_texts[9])
+
+    def onSaveAndQuitButton(self) -> None:
+        """Run processing when user clicks "Apply" button."""
+        with slicer.util.tryWithErrorDisplay(_("Failed to compute results."), waitCursor=True):
+            ret_value = self.logic.onSaveAndQuitButtonPressed()
+            if ret_value != -1:
+                self.ui.inputBox_Student_Name.text = ""
+                self.ui.inputBox_Exam_Number.text = ""
+                self.ui.inputBox_Flip_Number.setEnabled(True)
+                self.ui.lineEdit_Exam_Program_Folder.setEnabled(True)
+                self.ui.inputBox_Student_Name.setEnabled(True)
+                self.ui.inputBox_Exam_Number.setEnabled(True)
+                self.ui.pushButton_Structure_1.setText(self.logic.structure_buttons_texts[0])
+                self.ui.pushButton_Structure_2.setText(self.logic.structure_buttons_texts[1])
+                self.ui.pushButton_Structure_3.setText(self.logic.structure_buttons_texts[2])
+                self.ui.pushButton_Structure_4.setText(self.logic.structure_buttons_texts[3])
+                self.ui.pushButton_Structure_5.setText(self.logic.structure_buttons_texts[4])
+                self.ui.pushButton_Structure_6.setText(self.logic.structure_buttons_texts[5])
+                self.ui.pushButton_Structure_7.setText(self.logic.structure_buttons_texts[6])
+                self.ui.pushButton_Structure_8.setText(self.logic.structure_buttons_texts[7])
+                self.ui.pushButton_Structure_9.setText(self.logic.structure_buttons_texts[8])
+                self.ui.pushButton_Structure_10.setText(self.logic.structure_buttons_texts[9])
+                self.ui.pushButton_Place_Structure_1.setText(self.logic.place_structure_buttons_texts[0])
+                self.ui.pushButton_Place_Structure_2.setText(self.logic.place_structure_buttons_texts[1])
+                self.ui.pushButton_Place_Structure_3.setText(self.logic.place_structure_buttons_texts[2])
+                self.ui.pushButton_Place_Structure_4.setText(self.logic.place_structure_buttons_texts[3])
+                self.ui.pushButton_Place_Structure_5.setText(self.logic.place_structure_buttons_texts[4])
+                self.ui.pushButton_Place_Structure_6.setText(self.logic.place_structure_buttons_texts[5])
+                self.ui.pushButton_Place_Structure_7.setText(self.logic.place_structure_buttons_texts[6])
+                self.ui.pushButton_Place_Structure_8.setText(self.logic.place_structure_buttons_texts[7])
+                self.ui.pushButton_Place_Structure_9.setText(self.logic.place_structure_buttons_texts[8])
+                self.ui.pushButton_Place_Structure_10.setText(self.logic.place_structure_buttons_texts[9])
 
 #
 # BV4_STATEX_StudentLogic
 #
-
 
 class BV4_STATEX_StudentLogic(ScriptedLoadableModuleLogic):
     """This class should implement all the actual
@@ -326,10 +422,23 @@ class BV4_STATEX_StudentLogic(ScriptedLoadableModuleLogic):
     def __init__(self) -> None:
         """Called when the logic class is instantiated. Can be used for initializing member variables."""
         ScriptedLoadableModuleLogic.__init__(self)
+        self.exam_folder_path = ""
+        self.dataset_path = ""
+        self.local_backup_path = ""
+
+        self.exam_active = False
         self.structures = []
         self.current_dataset = ""
         self.answered_questions = [False] * NUMBER_OF_QUESTIONS
         self.node = None
+        self.flip_computer = 1
+        self.student_name = ""
+        self.exam_nr = 0
+        self.filename = ""
+        self.structure_buttons_texts = [""] * NUMBER_OF_QUESTIONS
+        self.setStructureButtonsText()
+        self.place_structure_buttons_texts = [""] * NUMBER_OF_QUESTIONS
+        self.setPlaceStructureButtonsText()
 
     def getParameterNode(self):
         return BV4_STATEX_StudentParameterNode(super().getParameterNode())
@@ -372,14 +481,146 @@ class BV4_STATEX_StudentLogic(ScriptedLoadableModuleLogic):
         stopTime = time.time()
         logging.info(f"Processing completed in {stopTime-startTime:.2f} seconds")
 
-    def onLoadStructuresButtonPressed(self, student_name, exam_nr):
+    def reset(self):
+        self.exam_active = False
+        self.structures = []
+        self.current_dataset = ""
+        self.answered_questions = [False] * NUMBER_OF_QUESTIONS
+        self.node = None
+        self.student_name = ""
+        self.exam_nr = 0
+        self.filename = ""
+
+    def setPaths(self, exam_folder_path):
+        self.exam_folder_path = exam_folder_path
+        self.dataset_path = os.path.join(self.exam_folder_path, "Dataset")
+        self.local_backup_path = os.path.join(self.exam_folder_path, "Backups")
+        if not os.path.isdir(self.local_backup_path):
+            os.makedirs(self.local_backup_path)
+
+    # kan nog byta till onChooseFolderButtonPressed
+    def onChooseExamProgramFolderButtonPressed(self):
+        folder = str(qt.QFileDialog.getExistingDirectory())
+        return folder
+
+    def onLoadDatasetsButtonPressed(self, exam_folder_path):
+        self.setPaths(exam_folder_path)
+
+        slicer.util.loadScene(os.path.join(self.dataset_path, DATASETS_FILE_NAME))
+
+    def onLoadStructuresButtonPressed(self, flip_computer, student_name, exam_nr):
+        if self.exam_active:
+            qt.QMessageBox.warning(slicer.util.mainWindow(), 'SL Tutorial: GUI HelloWorld',
+                                   f"Kan ej ladda in strukturer medan en exam är aktiv.")
+        if len(student_name.split()) < 2:
+            # Kanske även kolla att endast innehåller a-ö och mellanslag
+            qt.QMessageBox.warning(slicer.util.mainWindow(), 'SL Tutorial: GUI HelloWorld',
+                                   f"Ange både för- och efternamn.")
+            return -1
+        try:
+            flip_computer = int(flip_computer)
+            if flip_computer < 1 or flip_computer > 17: # 17 --> AMOUNT_FLIP_COMPUTERS
+                raise ValueError("flip_computer needs to be a number between 1 and 17.")
+        except:
+            qt.QMessageBox.warning(slicer.util.mainWindow(), 'SL Tutorial: GUI HelloWorld',
+                                   f"Ange ett nummer för flipdatorn mellan 1 och 17.")
+            return -1
+        reply = qt.QMessageBox.question(slicer.util.mainWindow(), 'SL Tutorial: GUI HelloWorld',
+                                        f"Har du angett rätt namn och exam nr?\nNamn: {student_name}\nExam nr: {exam_nr}",
+                                        qt.QMessageBox.Yes | qt.QMessageBox.No)
+        if reply == qt.QMessageBox.No:
+            return -1
+        self.flip_computer = int(flip_computer)
+        self.student_name = student_name
+        self.exam_nr = exam_nr
         self.retrieveStructures(exam_nr)
-        self.addNodeAndControlPoints(exam_nr, student_name, self.structures)
+        self.filename = f"{self.exam_nr}_{self.student_name}.mrk.json"
+        if len(self.structures) != 10:
+            # Måste nog göra reset då
+            qt.QMessageBox.warning(slicer.util.mainWindow(), 'SL Tutorial: GUI HelloWorld', f"Inga strukturer kunde hittas för exam nr: {exam_nr}.")
+        # INTE FINT, GÖR OM
+        if os.path.isfile(os.path.join(self.local_backup_path, self.filename)):
+            reply = qt.QMessageBox.question(slicer.util.mainWindow(), 'SL Tutorial: GUI HelloWorld',
+                                            f"En fil med markups existerar redan för exam nr {exam_nr}.\nVill du läsa in den?",
+                                            qt.QMessageBox.Yes | qt.QMessageBox.No)
+            if reply == qt.QMessageBox.Yes:
+                self.node = self.loadNodeFromFile(os.path.join(self.local_backup_path, self.filename))
+            else:
+                self.addNodeAndControlPoints(exam_nr, student_name, self.structures)
+                pass
+        else:
+            self.addNodeAndControlPoints(exam_nr, student_name, self.structures)
+        self.exam_active = True
+        self.setStructureButtonsText(structures=self.structures)
+        self.updateAnsweredQuestions()
+        self.setPlaceStructureButtonsText()
+        return 0
 
     def onStructureButtonPressed(self, number):
+        if not self.exam_active:
+            return -1
+        self.saveNodeToFile(self.node, os.path.join(self.local_backup_path, self.filename))
+        self.updateAnsweredQuestions()
+        self.setPlaceStructureButtonsText()
         self.changeDataset(self.structures[number - 1]["Dataset"])
-        #self.centreOnControlPoint(self.node, number, self.structures[number]["Dataset"])
+        slicer.modules.markups.logic().JumpSlicesToLocation(0, 0, 0, True)
+        self.node.GetDisplayNode().SetActiveControlPoint(number - 1)
+        if self.checkIfControlPointExists(number):
+            self.centreOnControlPoint(self.node, number - 1, self.structures[number - 1]["Dataset"])
+
+    def onPlaceStructureButtonPressed(self, number):
+        if not self.exam_active:
+            return -1
+        self.saveNodeToFile(self.node, os.path.join(self.local_backup_path, self.filename))
+        self.updateAnsweredQuestions()
+        self.setPlaceStructureButtonsText()
+        self.changeDataset(self.structures[number - 1]["Dataset"])
+        if self.answered_questions[number - 1]:
+            reply = qt.QMessageBox.question(slicer.util.mainWindow(), 'SL Tutorial: GUI HelloWorld',
+                                            f"Du har redan placerat ut denna struktur.\nÄr du säker på att du vill placera om den?",
+                                            qt.QMessageBox.Yes | qt.QMessageBox.No)
+            if reply == qt.QMessageBox.No:
+                return
         self.setNewControlPoint(self.node, number - 1)
+
+    def onSaveAndQuitButtonPressed(self):
+        # Återställer fönstrena och byter till big brain vid ny användare
+        if not self.exam_active:
+            qt.QMessageBox.warning(slicer.util.mainWindow(), 'SL Tutorial: GUI HelloWorld',
+                                   f"Kan inte spara när ingen exam pågår.")
+            return -1
+        reply = qt.QMessageBox.question(slicer.util.mainWindow(), 'SL Tutorial: GUI HelloWorld',
+                                        f"Är du säker på att du vill avsluta?\nMarkupfilen kommer att sparas.",
+                                        qt.QMessageBox.Yes | qt.QMessageBox.No)
+        if reply == qt.QMessageBox.No:
+            return -1
+        #self.saveNodeToFile(self.node, os.path.join(LOCAL_MARKUP_PATH, self.filename))
+        self.saveNodeToFile(self.node, os.path.join(os.path.join(MEGA_MARKUP_PATH, f"Flip-{self.flip_computer}"), self.filename))
+        slicer.mrmlScene.RemoveNode(self.node)
+        self.resetWindow()
+        self.resetAnsweredQuestions()
+        self.reset()
+        self.setStructureButtonsText()
+        self.setPlaceStructureButtonsText()
+
+    def setStructureButtonsText(self, structures=None):
+        # texts --> strings?
+        for i in range(len(self.structure_buttons_texts)):
+            if structures is None:
+                structure_str = f"Struktur {i + 1}"
+            else:
+                structure_str = f"Struktur {i + 1}: {structures[i]['Structure']} i {structures[i]['Dataset']}"
+            self.structure_buttons_texts[i] = structure_str
+
+    def setPlaceStructureButtonsText(self):
+        for i in range(len(self.place_structure_buttons_texts)):
+            if not self.exam_active:
+                structure_str = ""
+            elif self.answered_questions[i]:
+                structure_str = "(✓)"
+            else:
+                structure_str = "(X)"
+            self.place_structure_buttons_texts[i] = structure_str
 
     def displaySelectVolume(self, a):
         layoutManager = slicer.app.layoutManager()
@@ -409,8 +650,6 @@ class BV4_STATEX_StudentLogic(ScriptedLoadableModuleLogic):
 
     # Ändrar nuvarande dataset till specificerat dataset
     def changeDataset(self, dataset):
-        #if dataset.lower() == self.current_dataset.lower():
-        #    return
         if dataset.lower()  == BIG_BRAIN.lower():
             self.displaySelectVolume(BIG_BRAIN_VOLUME_NAME)
             self.current_dataset = BIG_BRAIN
@@ -465,7 +704,9 @@ class BV4_STATEX_StudentLogic(ScriptedLoadableModuleLogic):
         #interactionNode.SetPlaceModePersistence(0)
 
     def checkIfControlPointExists(self, question_number):
-        return self.answered_questions[question_number]
+        controlPointCoordinates = self.node.GetNthControlPointPosition(question_number - 1)
+        # Kan också kolla om den är set eller unset
+        return controlPointCoordinates[0] != 0.0 or controlPointCoordinates[1] != 0.0 or controlPointCoordinates[2] != 0.0
 
     # Centrerar vyerna på control point
     # Hantera på ett bättre sätt i framtiden
@@ -479,10 +720,10 @@ class BV4_STATEX_StudentLogic(ScriptedLoadableModuleLogic):
     def resetAnsweredQuestions(self):
         self.answered_questions = [False] * NUMBER_OF_QUESTIONS
 
-    def updateAnsweredQuestions(self, node):
-        self.resetAnsweredQuestions()
-        for i in range(node.GetNumberOfControlPoints()):
-            controlPointCoordinates = node.GetNthControlPointPosition(i)
+    def updateAnsweredQuestions(self):
+        self.resetAnsweredQuestions() # behövs detta?
+        for i in range(self.node.GetNumberOfControlPoints()):
+            controlPointCoordinates = self.node.GetNthControlPointPosition(i)
             # Kan också kolla om den är set eller unset
             if controlPointCoordinates[0] != 0.0 or controlPointCoordinates[1] != 0.0 or controlPointCoordinates[2] != 0.0:
                 # Om koordinater för control point ej är [0.0, 0.0, 0.0] är frågan besvarad
